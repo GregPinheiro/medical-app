@@ -1,10 +1,26 @@
 import "./App.css";
+import { BrowserRouter, Route } from "react-router-dom";
+
+import CopyRights from "./Components/CopyRights";
+import Signin from "./Components/Signin";
+import Navbar from "./Components/Navbar";
+import Pacientes from "./Components/Pacientes";
 
 function App() {
   return (
-    <div className="App">
-      <h1>Hello</h1>
-    </div>
+    <BrowserRouter className="App">
+      <Navbar />
+
+      <Route path="/user/signin">
+        <Signin />
+      </Route>
+
+      <Route path="/pacientes">
+        <Pacientes />
+      </Route>
+
+      <CopyRights />
+    </BrowserRouter>
   );
 }
 
