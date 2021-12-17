@@ -5,6 +5,9 @@ import CopyRights from "./Components/CopyRights";
 import Signin from "./Components/Signin";
 import Navbar from "./Components/Navbar";
 import Pacientes from "./Components/Pacientes";
+import Medicos from "./Components/Medicos";
+import Convenios from "./Components/Convenios";
+import Hospitais from "./Components/Hospitais";
 
 function App() {
   return (
@@ -17,6 +20,18 @@ function App() {
 
       <Route path="/pacientes">
         <Pacientes />
+      </Route>
+
+      <Route path="/médicos">
+        <Medicos />
+      </Route>
+
+      <Route path="/convênios">
+        <Convenios />
+      </Route>
+
+      <Route path="/hospitais">
+        <Hospitais />
       </Route>
 
       <CopyRights />

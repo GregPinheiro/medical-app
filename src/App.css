@@ -1,3 +1,23 @@
 .copyRights {
   text-align: center;
 }
+
+.Paciente-Title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  padding: 10px 0;
+}
+
+.Medicos-Title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  padding: 10px 0;
+}
+
+.td-funcoes {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
