@@ -1,5 +1,5 @@
-import React, { useContext } from "react";
-import { Link } from "react-router-dom";
+import React, { useContext, useState } from "react";
+import { Link, Redirect } from "react-router-dom";
 import { UserContext } from "../../providers/user";
 
 function Navbar() {
@@ -7,11 +7,13 @@ function Navbar() {
 
   const UserMenu = () => {
     return (
-      <li className="nav-item">
-        <p className="nav-link">
-          Ola, {user.name} (<a onClick={handleLogout}>sair</a>)
-        </p>
-      </li>
+      <div className="userMenu">
+        <li className="nav-item">
+          <p className="nav-link">
+            Olá, {user.name} (<a onClick={handleLogout}>sair</a>)
+          </p>
+        </li>
+      </div>
     );
   };
 
@@ -37,7 +39,7 @@ function Navbar() {
   };
 
   return (
-    <div>
+    <div className="NavBar">
       <nav className="navbar navbar-expand navbar-dark bg-dark">
         <a href="/home" className="navbar-brand">
           Medical App

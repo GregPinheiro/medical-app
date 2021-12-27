@@ -17,17 +17,32 @@ import {
   DialogContentText,
 } from "@material-ui/core";
 
-import hospitaisServices from "../../services/hospitais.services";
+import hospitaisServices from "../../services/hospitais.service";
 
 function Hospitais() {
   const [updateTable, setUpdateTable] = useState(false);
   const [readOnly, setReadOnly] = useState(false);
   const [loading, setLoading] = useState(false);
   const [hospitais, setHospitais] = useState([]);
+  const [hospitalDetail, setHospitalDetail] = useState({});
+  const [hospitalId, setHospitalId] = useState(0);
+  const [hospitalName, setHospitalName] = useState("");
   const [popupNew, setPopupNew] = useState(false);
   const [loadingNew, setLoadingNew] = useState(false);
   const [newSucessfull, setNewSucessfull] = useState(false);
   const [newFailure, setNewFailure] = useState(false);
+  const [popupView, setPopupView] = useState(false);
+  const [loadingView, setLoadingView] = useState(false);
+  const [viewSucessfull, setViewSucessfull] = useState(false);
+  const [viewFailure, setViewFailure] = useState(false);
+  const [popupEdit, setPopupEdit] = useState(false);
+  const [loadingEdit, setLoadingEdit] = useState(false);
+  const [editSucessfull, setEditSucessfull] = useState(false);
+  const [editFailure, setEditFailure] = useState(false);
+  const [popupDelete, setPopupDelete] = useState(false);
+  const [loadingDelete, setLoadingDelete] = useState(false);
+  const [deleteSucessfull, setDeleteSucessfull] = useState(false);
+  const [deleteFailure, setDeleteFailure] = useState(false);
 
   useEffect(async () => {
     setLoading(true);
@@ -48,6 +63,14 @@ function Hospitais() {
     setLoading(false);
     setUpdateTable(false);
   }, [updateTable]);
+
+  useEffect(() => {
+    if (hospitalDetail) {
+      for (const detail in hospitalDetail) {
+        loadDetail(detail, hospitalDetail[detail]);
+      }
+    }
+  }, [hospitalDetail]);
 
   const handleSave = async () => {
     const body = getBody();
@@ -71,6 +94,115 @@ function Hospitais() {
       e.response.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingNew(false);
+    }
+  };
+
+  const handleView = async (id) => {
+    setPopupView(true);
+    setReadOnly(true);
+
+    try {
+      setLoadingView(true);
+
+      const response = await hospitaisServices.findOne(id);
+
+      switch (response.status) {
+        case 200:
+          setHospitalDetail(response.data);
+          break;
+        default:
+          setViewFailure(true);
+          alert(
+            "Falha ao buscar as informações do hospital, tente novamente mais tarde"
+          );
+      }
+    } catch (e) {
+      setViewFailure(true);
+      e.response.data ? alert(e.response.data) : alert(e);
+    } finally {
+      setLoadingView(false);
+    }
+  };
+
+  const handleEdit = async (id) => {
+    setPopupEdit(true);
+    setHospitalId(id);
+
+    try {
+      setLoadingEdit(true);
+
+      const response = await hospitaisServices.findOne(id);
+
+      switch (response.status) {
+        case 200:
+          setHospitalDetail(response.data);
+          break;
+
+        default:
+          setEditFailure(true);
+          alert(
+            "Falha ao buscar os informações do hospital, tente novamente mais tarde"
+          );
+      }
+    } catch (e) {
+      setEditFailure(true);
+      e.response.data ? alert(e.response.data) : alert(e);
+    } finally {
+      setLoadingEdit(false);
+    }
+  };
+
+  const editHospital = async () => {
+    const body = getBody();
+
+    try {
+      setLoadingEdit(true);
+
+      const response = await hospitaisServices.update(hospitalId, body);
+
+      switch (response.status) {
+        case 202:
+          setEditSucessfull(true);
+          break;
+
+        default:
+          setEditFailure(true);
+      }
+    } catch (e) {
+      setEditFailure(true);
+      e.response.data ? alert(e.response.data) : alert(e);
+    } finally {
+      setUpdateTable(true);
+      setLoadingEdit(false);
+    }
+  };
+
+  const handleDelete = (id, name) => {
+    setHospitalId(id);
+    setHospitalName(name);
+    setPopupDelete(true);
+  };
+
+  const deleteHospital = async () => {
+    try {
+      setLoadingDelete(true);
+
+      const response = await hospitaisServices.delete(hospitalId);
+
+      switch (response.status) {
+        case 202:
+          setDeleteSucessfull(true);
+          break;
+
+        default:
+          setDeleteFailure(true);
+      }
+    } catch (e) {
+      e.response.data ? alert(e.response.data) : alert(e);
+      setDeleteFailure(true);
+    } finally {
+      setUpdateTable(true);
+      setLoadingDelete(false);
     }
   };
 
@@ -312,11 +444,35 @@ function Hospitais() {
     return value.length > 0 ? value : null;
   };
 
+  const loadDetail = (element, newValue) => {
+    const item = document.getElementById(element);
+
+    if (item) {
+      item.value = newValue;
+    }
+  };
+
   const closePopup = () => {
     setPopupNew(false);
     setLoadingNew(false);
     setNewSucessfull(false);
     setNewFailure(false);
+
+    setPopupView(false);
+    setLoadingView(false);
+    setViewSucessfull(false);
+    setViewFailure(false);
+    setReadOnly(false);
+
+    setPopupEdit(false);
+    setLoadingEdit(false);
+    setEditSucessfull(false);
+    setEditFailure(false);
+
+    setPopupDelete(false);
+    setLoadingDelete(false);
+    setDeleteSucessfull(false);
+    setDeleteFailure(false);
   };
 
   return (
@@ -360,9 +516,11 @@ function Hospitais() {
               <td>{item.telefone1}</td>
               <td>{item.contato1}</td>
               <td className="td-funcoes">
-                <PageviewIcon />
-                <EditIcon />
-                <DeleteForeverIcon />
+                <PageviewIcon onClick={() => handleView(item.id)} />
+                <EditIcon onClick={() => handleEdit(item.id)} />
+                <DeleteForeverIcon
+                  onClick={() => handleDelete(item.id, item.nome)}
+                />
               </td>
             </tr>
           ))}
@@ -391,6 +549,76 @@ function Hospitais() {
             <Button onClick={() => closePopup()}>Sair</Button>
           ) : (
             <Button onClick={() => handleSave()}>Salvar</Button>
+          )}
+        </DialogActions>
+      </Dialog>
+      <Dialog open={popupView} fullWidth={true}>
+        <DialogTitle>Dados do Hospital</DialogTitle>
+        <DialogContent>
+          {viewFailure && (
+            <DialogContentText>
+              <WarningOutlinedIcon /> Falha ao carregar os dados do hospital
+            </DialogContentText>
+          )}
+          {form()}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => closePopup()}>Sair</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={popupEdit} fullWidth={true}>
+        <DialogTitle>Editar Dados do Hospital</DialogTitle>
+        <DialogContent>
+          {editSucessfull && (
+            <DialogContentText>
+              <CheckOutlinedIcon /> Hospital editado com sucesso!!!
+            </DialogContentText>
+          )}
+          {editFailure && (
+            <DialogContentText>
+              <WarningOutlinedIcon /> Falha ao tentar editar hosiptal, verifique
+              os dados e tente novamente!!!
+            </DialogContentText>
+          )}
+          {form()}
+        </DialogContent>
+        <DialogActions>
+          {loadingEdit && <CircularProgress color="secondary" />}
+          <Button onClick={() => closePopup()}>Cancelar</Button>
+          {editSucessfull ? (
+            <Button onClick={() => closePopup()}>Sair</Button>
+          ) : (
+            <Button onClick={() => editHospital()}>Salvar</Button>
+          )}
+        </DialogActions>
+      </Dialog>
+      <Dialog open={popupDelete} fullWidth={true}>
+        <DialogTitle>Deletar Hospital</DialogTitle>
+        <DialogContent>
+          {deleteSucessfull && (
+            <DialogContentText>
+              <CheckOutlinedIcon /> Hospital deletado com sucesso!!!
+            </DialogContentText>
+          )}
+          {deleteFailure && (
+            <DialogContentText>
+              <WarningOutlinedIcon /> Falha ao tentar deletar hospital,
+              verifique os dados e tente novamente!!!
+            </DialogContentText>
+          )}
+          Você realmente deseja deletar o hospital {hospitalName} ({hospitalId}
+          )?
+        </DialogContent>
+        <DialogActions>
+          {loadingDelete && <CircularProgress color="secondary" />}
+          {deleteSucessfull && (
+            <Button onClick={() => closePopup()}>Sair</Button>
+          )}
+          {!deleteSucessfull && (
+            <Button onClick={() => deleteHospital()}>Sim</Button>
+          )}
+          {!deleteSucessfull && (
+            <Button onClick={() => closePopup()}>Não</Button>
           )}
         </DialogActions>
       </Dialog>

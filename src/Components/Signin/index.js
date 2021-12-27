@@ -3,7 +3,7 @@ import { Redirect } from "react-router-dom";
 import Form from "./Form";
 import { Snackbar } from "@material-ui/core";
 
-import userServices from "../../services/user.services";
+import userServices from "../../services/user.service";
 import { UserContext } from "../../providers/user";
 
 const initialValues = {

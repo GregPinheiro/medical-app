@@ -21,3 +21,17 @@
   flex-direction: row;
   justify-content: space-around;
 }
+
+.NavBar {
+  display: flex;
+  flex-direction: column;
+}
+
+.userMenu {
+  margin-left: 30vw;
+}
+
+a {
+  margin: 10px 20px;
+  cursor: pointer;
+}
