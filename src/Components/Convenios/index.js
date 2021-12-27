@@ -17,7 +17,7 @@ import {
   DialogContentText,
 } from "@material-ui/core";
 
-import conveniosServices from "../../services/convenios.services";
+import conveniosServices from "../../services/convenios.service";
 
 function Convenios() {
   const [updateTable, setUpdateTable] = useState(false);

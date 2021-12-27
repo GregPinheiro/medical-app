@@ -17,16 +17,16 @@ import {
   DialogContentText,
 } from "@material-ui/core";
 
-import medicosServices from "../../services/medicos.service";
+import fornecedoresServices from "../../services/fornecedores.service";
 
-function Medicos() {
+function Fornecedores() {
   const [updateTable, setUpdateTable] = useState(false);
   const [readOnly, setReadOnly] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [medicos, setMedicos] = useState([]);
-  const [medicoDetail, setMedicoDetail] = useState({});
-  const [medicoId, setMedicoId] = useState(0);
-  const [medicoName, setMedicoName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [fornecedores, setFornecedores] = useState([]);
+  const [fornecedorDetail, setFornecedorDetail] = useState({});
+  const [fornecedorId, setFornecedorId] = useState(0);
+  const [fornecedorName, setFornecedorName] = useState("");
   const [popupNew, setPopupNew] = useState(false);
   const [loadingNew, setLoadingNew] = useState(false);
   const [newSucessfull, setNewSucessfull] = useState(false);
@@ -45,37 +45,45 @@ function Medicos() {
   const [deleteFailure, setDeleteFailure] = useState(false);
 
   useEffect(async () => {
-    const response = await medicosServices.findAll();
+    setLoading(true);
 
-    response.status == 200
-      ? setMedicos(response.data)
-      : alert(
+    const response = await fornecedoresServices.findAll();
+
+    switch (response.status) {
+      case 200:
+        setFornecedores(response.data);
+        break;
+
+      default:
+        alert(
           "Não foi possível carregar os dados, tente novamente mais tarde!"
         );
+    }
 
-    setUpdateTable(false);
     setLoading(false);
+    setUpdateTable(false);
   }, [updateTable]);
 
-  useEffect(async () => {
-    if (medicoDetail) {
-      for (const detail in medicoDetail) {
-        loadDetail(detail, medicoDetail[detail]);
+  useEffect(() => {
+    if (fornecedorDetail) {
+      for (const detail in fornecedorDetail) {
+        loadDetail(detail, fornecedorDetail[detail]);
       }
     }
-  }, [medicoDetail]);
+  }, [fornecedorDetail]);
 
-  const handleSaveNew = async () => {
+  const createFornecedor = async () => {
     const body = getBody();
 
     try {
       setLoadingNew(true);
 
-      const response = await medicosServices.create(body);
+      const response = await fornecedoresServices.create(body);
 
       switch (response.status) {
         case 201:
           setNewSucessfull(true);
+          setUpdateTable(true);
           break;
 
         default:
@@ -86,7 +94,6 @@ function Medicos() {
       e.response.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingNew(false);
-      setUpdateTable(true);
     }
   };
 
@@ -97,13 +104,19 @@ function Medicos() {
     try {
       setLoadingView(true);
 
-      const response = await medicosServices.findOne(id);
+      const response = await fornecedoresServices.findOne(id);
 
-      response.status == 200
-        ? setMedicoDetail(response.data)
-        : alert(
-            "Falha ao buscar as informações do médicos, tente novamente mais tarde!"
+      switch (response.status) {
+        case 200:
+          setFornecedorDetail(response.data);
+          break;
+
+        default:
+          setViewFailure(true);
+          alert(
+            "Falha ao buscar as informações do fornecedor, tente novamente"
           );
+      }
     } catch (e) {
       setViewFailure(true);
       e.response.data ? alert(e.response.data) : alert(e);
@@ -114,24 +127,23 @@ function Medicos() {
 
   const handleEdit = async (id) => {
     setPopupEdit(true);
-    setMedicoId(id);
+    setFornecedorId(id);
 
     try {
       setLoadingEdit(true);
 
-      const response = await medicosServices.findOne(id);
+      const response = await fornecedoresServices.findOne(id);
 
       switch (response.status) {
         case 200:
-          setMedicoDetail(response.data);
+          setFornecedorDetail(response.data);
           break;
 
         default:
           setEditFailure(true);
           alert(
-            "Falha ao buscar as informações do médicos, tente novamente mais tarde!"
+            "Falha ao buscar as informações do fornecedor, tente novamente mais tarde"
           );
-          break;
       }
     } catch (e) {
       setEditFailure(true);
@@ -141,13 +153,13 @@ function Medicos() {
     }
   };
 
-  const handleEditSave = async () => {
+  const editFornecedor = async () => {
     const body = getBody();
 
     try {
       setLoadingEdit(true);
 
-      const response = await medicosServices.update(medicoId, body);
+      const response = await fornecedoresServices.update(fornecedorId, body);
 
       switch (response.status) {
         case 202:
@@ -167,16 +179,16 @@ function Medicos() {
   };
 
   const handleDelete = (id, name) => {
-    setMedicoId(id);
-    setMedicoName(name);
+    setFornecedorId(id);
+    setFornecedorName(name);
     setPopupDelete(true);
   };
 
-  const handleDeleteMedico = async () => {
+  const deleteFornecedor = async () => {
     try {
       setLoadingDelete(true);
 
-      const response = await medicosServices.delete(medicoId);
+      const response = await fornecedoresServices.delete(fornecedorId);
 
       switch (response.status) {
         case 202:
@@ -198,8 +210,7 @@ function Medicos() {
   const getBody = () => {
     return {
       nome: getValue("nome"),
-      especialidade: getValue("especialidade"),
-      CRO_CRM: getValue("CRO_CRM"),
+      CNPJ: getValue("CNPJ"),
       endereco: getValue("endereco"),
       cidade: getValue("cidade"),
       UF: getValue("UF"),
@@ -207,7 +218,7 @@ function Medicos() {
       telefone: getValue("telefone"),
       celular: getValue("celular"),
       email: getValue("email"),
-      secretaria: getValue("secretaria"),
+      representante: getValue("representante"),
     };
   };
 
@@ -220,73 +231,32 @@ function Medicos() {
     const item = document.getElementById(element);
 
     if (item) {
-      if (item.type === "text") {
-        item.value = newValue;
-      } else {
-        const date = new Date(newValue);
-        item.value = date.toISOString().substr(0, 10);
-      }
+      item.value = newValue;
     }
-  };
-
-  const closePopup = () => {
-    setReadOnly(false);
-
-    setPopupNew(false);
-    setLoadingNew(false);
-    setNewSucessfull(false);
-    setNewFailure(false);
-
-    setPopupView(false);
-    setLoadingView(false);
-    setViewSucessfull(false);
-    setViewFailure(false);
-
-    setPopupEdit(false);
-    setLoadingEdit(false);
-    setEditSucessfull(false);
-    setEditFailure(false);
-
-    setPopupDelete(false);
-    setLoadingDelete(false);
-    setDeleteSucessfull(false);
-    setDeleteFailure(false);
   };
 
   const form = () => {
     return (
       <form id="Form-Add-Paciente">
         <div class="form-group">
-          <label for="nome">Nome do Médico</label>
+          <label for="nome">Nome</label>
           <input
             type="text"
             class="form-control"
             id="nome"
-            placeholder="Nome do paciente"
+            placeholder="Nome"
             readOnly={readOnly}
           />
         </div>
-        <div class="row">
-          <div class="col">
-            <label for="especialidade">Especialidade</label>
-            <input
-              type="text"
-              class="form-control"
-              id="especialidade"
-              placeholder="Especialidade"
-              readOnly={readOnly}
-            />
-          </div>
-          <div class="col">
-            <label for="CRO_CRM">CRO/CRM</label>
-            <input
-              type="text"
-              class="form-control"
-              id="CRO_CRM"
-              placeholder="CRO/CRM"
-              readOnly={readOnly}
-            />
-          </div>
+        <div class="form-group">
+          <label for="CNPJ">CNPJ</label>
+          <input
+            type="text"
+            class="form-control"
+            id="CNPJ"
+            placeholder="CNPJ"
+            readOnly={readOnly}
+          />
         </div>
         <div class="form-group">
           <label for="endereco">Endereço</label>
@@ -355,7 +325,7 @@ function Medicos() {
         <div class="form-group">
           <label for="email">E-mail</label>
           <input
-            type="text"
+            type="email"
             class="form-control"
             id="email"
             placeholder="e-mail"
@@ -363,12 +333,12 @@ function Medicos() {
           />
         </div>
         <div class="form-group">
-          <label for="secretaria">Contato Secretária</label>
+          <label for="representante">Representante</label>
           <input
             type="text"
             class="form-control"
-            id="secretaria"
-            placeholder="Contato Secretária"
+            id="representante"
+            placeholder="Representante"
             readOnly={readOnly}
           />
         </div>
@@ -376,13 +346,36 @@ function Medicos() {
     );
   };
 
+  const closePopup = () => {
+    setPopupNew(false);
+    setLoadingNew(false);
+    setNewSucessfull(false);
+    setNewFailure(false);
+
+    setPopupView(false);
+    setLoadingView(false);
+    setViewSucessfull(false);
+    setViewFailure(false);
+    setReadOnly(false);
+
+    setPopupEdit(false);
+    setLoadingEdit(false);
+    setEditSucessfull(false);
+    setEditFailure(false);
+
+    setPopupDelete(false);
+    setLoadingDelete(false);
+    setDeleteSucessfull(false);
+    setDeleteFailure(false);
+  };
+
   return (
     <>
       <div className="Medicos-Title">
-        <h1>Médicos</h1>
+        <h1>Fornecedores</h1>
         {loading && <CircularProgress color="secondary" />}
         <p>
-          Novo Médico{" "}
+          Novo Fornecedor{" "}
           <PostAddIcon
             className="Add-Button"
             onClick={() => setPopupNew(true)}
@@ -394,24 +387,28 @@ function Medicos() {
           <tr>
             <th scope="col">ID</th>
             <th scope="col">Nome</th>
-            <th scope="col">Especialidade</th>
-            <th scope="col">CRO/CRM</th>
+            <th scope="col">CNPJ</th>
+            <th scope="col">Representante</th>
             <th scope="col">E-mail</th>
             <th scope="col">Telefone</th>
             <th scope="col">Celular</th>
+            <th scope="col">Endereço</th>
+            <th scope="col">Cidade</th>
             <th scope="col">Função</th>
           </tr>
         </thead>
         <tbody>
-          {medicos.map((item) => (
+          {fornecedores.map((item) => (
             <tr scope="row">
               <td>{item.id}</td>
               <td>{item.nome}</td>
-              <td>{item.especialidade}</td>
-              <td>{item.CRO_CRM}</td>
+              <td>{item.CNPJ}</td>
+              <td>{item.representante}</td>
               <td>{item.email}</td>
               <td>{item.telefone}</td>
               <td>{item.celular}</td>
+              <td>{item.endereco}</td>
+              <td>{item.cidade}</td>
               <td className="td-funcoes">
                 <PageviewIcon onClick={() => handleView(item.id)} />
                 <EditIcon onClick={() => handleEdit(item.id)} />
@@ -424,16 +421,16 @@ function Medicos() {
         </tbody>
       </table>
       <Dialog open={popupNew} fullWidth={true}>
-        <DialogTitle>Cadastrar Novo Médico</DialogTitle>
+        <DialogTitle>Cadastrar Novo Fornecedor</DialogTitle>
         <DialogContent>
           {newSucessfull && (
             <DialogContentText>
-              <CheckOutlinedIcon /> Médico cadastrado com sucesso!!!
+              <CheckOutlinedIcon /> Fornecedor cadastrado com sucesso!!!
             </DialogContentText>
           )}
           {newFailure && (
             <DialogContentText>
-              <WarningOutlinedIcon /> Falha ao tentar cadastrar médico,
+              <WarningOutlinedIcon /> Falha ao tentar cadastrar fornecedor,
               verifique os dados e tente novamente!!!
             </DialogContentText>
           )}
@@ -445,16 +442,16 @@ function Medicos() {
           {newSucessfull ? (
             <Button onClick={() => closePopup()}>Sair</Button>
           ) : (
-            <Button onClick={() => handleSaveNew()}>Salvar</Button>
+            <Button onClick={() => createFornecedor()}>Salvar</Button>
           )}
         </DialogActions>
       </Dialog>
       <Dialog open={popupView} fullWidth={true}>
-        <DialogTitle>Dados do Médico</DialogTitle>
+        <DialogTitle>Dados do Fornecedor</DialogTitle>
         <DialogContent>
           {viewFailure && (
             <DialogContentText>
-              <WarningOutlinedIcon /> Falha ao carregar os dados do médico
+              <WarningOutlinedIcon /> Falha ao carregar os dados do fornecedor
             </DialogContentText>
           )}
           {form()}
@@ -464,17 +461,17 @@ function Medicos() {
         </DialogActions>
       </Dialog>
       <Dialog open={popupEdit} fullWidth={true}>
-        <DialogTitle>Editar Dados do Médico</DialogTitle>
+        <DialogTitle>Editar Dados do Fornecedor</DialogTitle>
         <DialogContent>
           {editSucessfull && (
             <DialogContentText>
-              <CheckOutlinedIcon /> Médico editado com sucesso!!!
+              <CheckOutlinedIcon /> Fornecedor editado com sucesso!!!
             </DialogContentText>
           )}
           {editFailure && (
             <DialogContentText>
-              <WarningOutlinedIcon /> Falha ao tentar editar médico, verifique
-              os dados e tente novamente!!!
+              <WarningOutlinedIcon /> Falha ao tentar editar fornecedor,
+              verifique os dados e tente novamente!!!
             </DialogContentText>
           )}
           {form()}
@@ -485,25 +482,27 @@ function Medicos() {
           {editSucessfull ? (
             <Button onClick={() => closePopup()}>Sair</Button>
           ) : (
-            <Button onClick={() => handleEditSave()}>Salvar</Button>
+            <Button onClick={() => editFornecedor()}>Salvar</Button>
           )}
         </DialogActions>
       </Dialog>
       <Dialog open={popupDelete} fullWidth={true}>
-        <DialogTitle>Deletar Médico</DialogTitle>
+        <DialogTitle>Deletar Fornecedor</DialogTitle>
         <DialogContent>
           {deleteSucessfull && (
             <DialogContentText>
-              <CheckOutlinedIcon /> Médico deletado com sucesso!!!
+              <CheckOutlinedIcon /> Fornecedor deletado com sucesso!!!
             </DialogContentText>
           )}
           {deleteFailure && (
             <DialogContentText>
-              <WarningOutlinedIcon /> Falha ao tentar deletar médico, verifique
-              os dados e tente novamente!!!
+              <WarningOutlinedIcon /> Falha ao tentar deletar fornecedor,
+              verifique os dados e tente novamente!!!
             </DialogContentText>
           )}
-          Você realmente deseja deletar o médico {medicoName} ({medicoId})?
+          Você realmente deseja deletar o fornecedor {fornecedorName} (
+          {fornecedorId}
+          )?
         </DialogContent>
         <DialogActions>
           {loadingDelete && <CircularProgress color="secondary" />}
@@ -511,7 +510,7 @@ function Medicos() {
             <Button onClick={() => closePopup()}>Sair</Button>
           )}
           {!deleteSucessfull && (
-            <Button onClick={() => handleDeleteMedico()}>Sim</Button>
+            <Button onClick={() => deleteFornecedor()}>Sim</Button>
           )}
           {!deleteSucessfull && (
             <Button onClick={() => closePopup()}>Não</Button>
@@ -522,4 +521,4 @@ function Medicos() {
   );
 }
 
-export default Medicos;
+export default Fornecedores;

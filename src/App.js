@@ -8,6 +8,8 @@ import Pacientes from "./Components/Pacientes";
 import Medicos from "./Components/Medicos";
 import Convenios from "./Components/Convenios";
 import Hospitais from "./Components/Hospitais";
+import Cirurgias from "./Components/Cirurgias";
+import Fornecedores from "./Components/Fornecedores";
 
 function App() {
   return (
@@ -32,6 +34,14 @@ function App() {
 
       <Route path="/hospitais">
         <Hospitais />
+      </Route>
+
+      <Route path="/cirurgias">
+        <Cirurgias />
+      </Route>
+
+      <Route path="/fornecedores">
+        <Fornecedores />
       </Route>
 
       <CopyRights />

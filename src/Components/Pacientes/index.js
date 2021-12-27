@@ -17,7 +17,7 @@ import {
   DialogContentText,
 } from "@material-ui/core";
 
-import pacientesServices from "../../services/pacientes.services";
+import pacientesServices from "../../services/pacientes.service";
 
 function Pacientes() {
   const [pacientes, setPacientes] = useState([]);

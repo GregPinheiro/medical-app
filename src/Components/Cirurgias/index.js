@@ -17,16 +17,16 @@ import {
   DialogContentText,
 } from "@material-ui/core";
 
-import medicosServices from "../../services/medicos.service";
+import cirurgiasServices from "../../services/cirurgias.service";
 
-function Medicos() {
+function Cirurgias() {
   const [updateTable, setUpdateTable] = useState(false);
   const [readOnly, setReadOnly] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [medicos, setMedicos] = useState([]);
-  const [medicoDetail, setMedicoDetail] = useState({});
-  const [medicoId, setMedicoId] = useState(0);
-  const [medicoName, setMedicoName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [cirurgias, setCirurgias] = useState([]);
+  const [cirurgiaDetail, setCirurgiaDetail] = useState({});
+  const [cirurgiaId, setCirurgiaId] = useState(0);
+  const [cirurgiaName, setCirurgiaName] = useState("");
   const [popupNew, setPopupNew] = useState(false);
   const [loadingNew, setLoadingNew] = useState(false);
   const [newSucessfull, setNewSucessfull] = useState(false);
@@ -45,37 +45,45 @@ function Medicos() {
   const [deleteFailure, setDeleteFailure] = useState(false);
 
   useEffect(async () => {
-    const response = await medicosServices.findAll();
+    setLoading(true);
 
-    response.status == 200
-      ? setMedicos(response.data)
-      : alert(
+    const response = await cirurgiasServices.findAll();
+
+    switch (response.status) {
+      case 200:
+        setCirurgias(response.data);
+        break;
+
+      default:
+        alert(
           "Não foi possível carregar os dados, tente novamente mais tarde!"
         );
+    }
 
-    setUpdateTable(false);
     setLoading(false);
+    setUpdateTable(false);
   }, [updateTable]);
 
-  useEffect(async () => {
-    if (medicoDetail) {
-      for (const detail in medicoDetail) {
-        loadDetail(detail, medicoDetail[detail]);
+  useEffect(() => {
+    if (cirurgiaDetail) {
+      for (const detail in cirurgiaDetail) {
+        loadDetail(detail, cirurgiaDetail[detail]);
       }
     }
-  }, [medicoDetail]);
+  }, [cirurgiaDetail]);
 
-  const handleSaveNew = async () => {
+  const createCirurgia = async () => {
     const body = getBody();
 
     try {
       setLoadingNew(true);
 
-      const response = await medicosServices.create(body);
+      const response = await cirurgiasServices.create(body);
 
       switch (response.status) {
         case 201:
           setNewSucessfull(true);
+          setUpdateTable(true);
           break;
 
         default:
@@ -86,7 +94,6 @@ function Medicos() {
       e.response.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingNew(false);
-      setUpdateTable(true);
     }
   };
 
@@ -97,13 +104,18 @@ function Medicos() {
     try {
       setLoadingView(true);
 
-      const response = await medicosServices.findOne(id);
+      const response = await cirurgiasServices.findOne(id);
 
-      response.status == 200
-        ? setMedicoDetail(response.data)
-        : alert(
-            "Falha ao buscar as informações do médicos, tente novamente mais tarde!"
+      switch (response.status) {
+        case 200:
+          setCirurgiaDetail(response.data);
+          break;
+        default:
+          setViewFailure(true);
+          alert(
+            "Falha ao buscar as informações da cirurgia, tente novamente mais tarde"
           );
+      }
     } catch (e) {
       setViewFailure(true);
       e.response.data ? alert(e.response.data) : alert(e);
@@ -114,24 +126,23 @@ function Medicos() {
 
   const handleEdit = async (id) => {
     setPopupEdit(true);
-    setMedicoId(id);
+    setCirurgiaId(id);
 
     try {
       setLoadingEdit(true);
 
-      const response = await medicosServices.findOne(id);
+      const response = await cirurgiasServices.findOne(id);
 
       switch (response.status) {
         case 200:
-          setMedicoDetail(response.data);
+          setCirurgiaDetail(response.data);
           break;
 
         default:
           setEditFailure(true);
           alert(
-            "Falha ao buscar as informações do médicos, tente novamente mais tarde!"
+            "Falha ao buscar os informações da cirurgia, tente novamente mais tarde"
           );
-          break;
       }
     } catch (e) {
       setEditFailure(true);
@@ -141,13 +152,13 @@ function Medicos() {
     }
   };
 
-  const handleEditSave = async () => {
+  const editCirurgia = async () => {
     const body = getBody();
 
     try {
       setLoadingEdit(true);
 
-      const response = await medicosServices.update(medicoId, body);
+      const response = await cirurgiasServices.update(cirurgiaId, body);
 
       switch (response.status) {
         case 202:
@@ -167,16 +178,16 @@ function Medicos() {
   };
 
   const handleDelete = (id, name) => {
-    setMedicoId(id);
-    setMedicoName(name);
+    setCirurgiaId(id);
+    setCirurgiaName(name);
     setPopupDelete(true);
   };
 
-  const handleDeleteMedico = async () => {
+  const deleteCirurgia = async () => {
     try {
       setLoadingDelete(true);
 
-      const response = await medicosServices.delete(medicoId);
+      const response = await cirurgiasServices.delete(cirurgiaId);
 
       switch (response.status) {
         case 202:
@@ -195,43 +206,68 @@ function Medicos() {
     }
   };
 
-  const getBody = () => {
-    return {
-      nome: getValue("nome"),
-      especialidade: getValue("especialidade"),
-      CRO_CRM: getValue("CRO_CRM"),
-      endereco: getValue("endereco"),
-      cidade: getValue("cidade"),
-      UF: getValue("UF"),
-      CEP: getValue("CEP"),
-      telefone: getValue("telefone"),
-      celular: getValue("celular"),
-      email: getValue("email"),
-      secretaria: getValue("secretaria"),
-    };
-  };
-
-  const getValue = (id) => {
-    const { value } = document.getElementById(id);
-    return value.length > 0 ? value : null;
-  };
-
-  const loadDetail = (element, newValue) => {
-    const item = document.getElementById(element);
-
-    if (item) {
-      if (item.type === "text") {
-        item.value = newValue;
-      } else {
-        const date = new Date(newValue);
-        item.value = date.toISOString().substr(0, 10);
-      }
-    }
+  const form = () => {
+    return (
+      <form id="Form-Add-Paciente">
+        <div class="form-group">
+          <label for="nome">Nome</label>
+          <input
+            type="text"
+            class="form-control"
+            id="nome"
+            placeholder="Nome"
+            readOnly={readOnly}
+          />
+        </div>
+        <div class="form-group">
+          <label for="CID">CID</label>
+          <textarea
+            class="form-control"
+            id="CID"
+            placeholder="CID"
+            rows="2"
+            cols="50"
+            readOnly={readOnly}
+          />
+        </div>
+        <div class="form-group">
+          <label for="TUSS">TUSS</label>
+          <textarea
+            class="form-control"
+            id="TUSS"
+            placeholder="TUSS"
+            rows="2"
+            cols="50"
+            readOnly={readOnly}
+          />
+        </div>
+        <div class="form-group">
+          <label for="justificativa">Justificativa</label>
+          <textarea
+            class="form-control"
+            id="justificativa"
+            placeholder="Justificativa"
+            rows="4"
+            cols="50"
+            readOnly={readOnly}
+          />
+        </div>
+        <div class="form-group">
+          <label for="materiais">Materiais</label>
+          <textarea
+            class="form-control"
+            id="materiais"
+            placeholder="Materiais"
+            rows="4"
+            cols="50"
+            readOnly={readOnly}
+          />
+        </div>
+      </form>
+    );
   };
 
   const closePopup = () => {
-    setReadOnly(false);
-
     setPopupNew(false);
     setLoadingNew(false);
     setNewSucessfull(false);
@@ -241,6 +277,7 @@ function Medicos() {
     setLoadingView(false);
     setViewSucessfull(false);
     setViewFailure(false);
+    setReadOnly(false);
 
     setPopupEdit(false);
     setLoadingEdit(false);
@@ -253,136 +290,36 @@ function Medicos() {
     setDeleteFailure(false);
   };
 
-  const form = () => {
-    return (
-      <form id="Form-Add-Paciente">
-        <div class="form-group">
-          <label for="nome">Nome do Médico</label>
-          <input
-            type="text"
-            class="form-control"
-            id="nome"
-            placeholder="Nome do paciente"
-            readOnly={readOnly}
-          />
-        </div>
-        <div class="row">
-          <div class="col">
-            <label for="especialidade">Especialidade</label>
-            <input
-              type="text"
-              class="form-control"
-              id="especialidade"
-              placeholder="Especialidade"
-              readOnly={readOnly}
-            />
-          </div>
-          <div class="col">
-            <label for="CRO_CRM">CRO/CRM</label>
-            <input
-              type="text"
-              class="form-control"
-              id="CRO_CRM"
-              placeholder="CRO/CRM"
-              readOnly={readOnly}
-            />
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="endereco">Endereço</label>
-          <input
-            type="text"
-            class="form-control"
-            id="endereco"
-            placeholder="Endereço"
-            readOnly={readOnly}
-          />
-        </div>
-        <div class="row">
-          <div class="col">
-            <label for="cidade">Cidade</label>
-            <input
-              type="text"
-              class="form-control"
-              id="cidade"
-              placeholder="Cidade"
-              readOnly={readOnly}
-            />
-          </div>
-          <div class="col">
-            <label for="UF">UF</label>
-            <input
-              type="text"
-              class="form-control"
-              id="UF"
-              placeholder="Estado"
-              readOnly={readOnly}
-            />
-          </div>
-          <div class="col">
-            <label for="CEP">CEP</label>
-            <input
-              type="text"
-              class="form-control"
-              id="CEP"
-              placeholder="CEP"
-              readOnly={readOnly}
-            />
-          </div>
-        </div>
-        <div class="row">
-          <div class="col">
-            <label for="telefone">Telefone</label>
-            <input
-              type="text"
-              class="form-control"
-              id="telefone"
-              placeholder="Telefone"
-              readOnly={readOnly}
-            />
-          </div>
-          <div class="col">
-            <label for="celular">Celular</label>
-            <input
-              type="text"
-              class="form-control"
-              id="celular"
-              placeholder="Celular"
-              readOnly={readOnly}
-            />
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="email">E-mail</label>
-          <input
-            type="text"
-            class="form-control"
-            id="email"
-            placeholder="e-mail"
-            readOnly={readOnly}
-          />
-        </div>
-        <div class="form-group">
-          <label for="secretaria">Contato Secretária</label>
-          <input
-            type="text"
-            class="form-control"
-            id="secretaria"
-            placeholder="Contato Secretária"
-            readOnly={readOnly}
-          />
-        </div>
-      </form>
-    );
+  const getBody = () => {
+    return {
+      nome: getValue("nome"),
+      CID: getValue("CID"),
+      TUSS: getValue("TUSS"),
+      justificativa: getValue("justificativa"),
+      materiais: getValue("materiais"),
+    };
+  };
+
+  const getValue = (id) => {
+    const { value } = document.getElementById(id);
+    return value.length > 0 ? value : null;
+  };
+
+  const loadDetail = (element, newValue) => {
+    const item = document.getElementById(element);
+
+    if (item) {
+      item.value = newValue;
+    }
   };
 
   return (
     <>
       <div className="Medicos-Title">
-        <h1>Médicos</h1>
+        <h1>Cirurgias</h1>
         {loading && <CircularProgress color="secondary" />}
         <p>
-          Novo Médico{" "}
+          Nova Cirurgia{" "}
           <PostAddIcon
             className="Add-Button"
             onClick={() => setPopupNew(true)}
@@ -394,24 +331,22 @@ function Medicos() {
           <tr>
             <th scope="col">ID</th>
             <th scope="col">Nome</th>
-            <th scope="col">Especialidade</th>
-            <th scope="col">CRO/CRM</th>
-            <th scope="col">E-mail</th>
-            <th scope="col">Telefone</th>
-            <th scope="col">Celular</th>
+            <th scope="col">CID</th>
+            <th scope="col">TUSS</th>
+            <th scope="col">Justificativa</th>
+            <th scope="col">Materiais</th>
             <th scope="col">Função</th>
           </tr>
         </thead>
         <tbody>
-          {medicos.map((item) => (
+          {cirurgias.map((item) => (
             <tr scope="row">
               <td>{item.id}</td>
               <td>{item.nome}</td>
-              <td>{item.especialidade}</td>
-              <td>{item.CRO_CRM}</td>
-              <td>{item.email}</td>
-              <td>{item.telefone}</td>
-              <td>{item.celular}</td>
+              <td>{item.CID}</td>
+              <td>{item.TUSS}</td>
+              <td>{item.justificativa}</td>
+              <td>{item.materiais}</td>
               <td className="td-funcoes">
                 <PageviewIcon onClick={() => handleView(item.id)} />
                 <EditIcon onClick={() => handleEdit(item.id)} />
@@ -424,16 +359,16 @@ function Medicos() {
         </tbody>
       </table>
       <Dialog open={popupNew} fullWidth={true}>
-        <DialogTitle>Cadastrar Novo Médico</DialogTitle>
+        <DialogTitle>Cadastrar Nova Cirurgia</DialogTitle>
         <DialogContent>
           {newSucessfull && (
             <DialogContentText>
-              <CheckOutlinedIcon /> Médico cadastrado com sucesso!!!
+              <CheckOutlinedIcon /> Cirurgia cadastrada com sucesso!!!
             </DialogContentText>
           )}
           {newFailure && (
             <DialogContentText>
-              <WarningOutlinedIcon /> Falha ao tentar cadastrar médico,
+              <WarningOutlinedIcon /> Falha ao tentar cadastrar Cirurgia,
               verifique os dados e tente novamente!!!
             </DialogContentText>
           )}
@@ -445,16 +380,16 @@ function Medicos() {
           {newSucessfull ? (
             <Button onClick={() => closePopup()}>Sair</Button>
           ) : (
-            <Button onClick={() => handleSaveNew()}>Salvar</Button>
+            <Button onClick={() => createCirurgia()}>Salvar</Button>
           )}
         </DialogActions>
       </Dialog>
       <Dialog open={popupView} fullWidth={true}>
-        <DialogTitle>Dados do Médico</DialogTitle>
+        <DialogTitle>Dados da Cirurgia</DialogTitle>
         <DialogContent>
           {viewFailure && (
             <DialogContentText>
-              <WarningOutlinedIcon /> Falha ao carregar os dados do médico
+              <WarningOutlinedIcon /> Falha ao carregar os dados da cirurgia
             </DialogContentText>
           )}
           {form()}
@@ -464,16 +399,16 @@ function Medicos() {
         </DialogActions>
       </Dialog>
       <Dialog open={popupEdit} fullWidth={true}>
-        <DialogTitle>Editar Dados do Médico</DialogTitle>
+        <DialogTitle>Editar Dados da Cirurgia</DialogTitle>
         <DialogContent>
           {editSucessfull && (
             <DialogContentText>
-              <CheckOutlinedIcon /> Médico editado com sucesso!!!
+              <CheckOutlinedIcon /> Cirurgia editada com sucesso!!!
             </DialogContentText>
           )}
           {editFailure && (
             <DialogContentText>
-              <WarningOutlinedIcon /> Falha ao tentar editar médico, verifique
+              <WarningOutlinedIcon /> Falha ao tentar editar cirurgia, verifique
               os dados e tente novamente!!!
             </DialogContentText>
           )}
@@ -485,25 +420,26 @@ function Medicos() {
           {editSucessfull ? (
             <Button onClick={() => closePopup()}>Sair</Button>
           ) : (
-            <Button onClick={() => handleEditSave()}>Salvar</Button>
+            <Button onClick={() => editCirurgia()}>Salvar</Button>
           )}
         </DialogActions>
       </Dialog>
       <Dialog open={popupDelete} fullWidth={true}>
-        <DialogTitle>Deletar Médico</DialogTitle>
+        <DialogTitle>Deletar Cirurgia</DialogTitle>
         <DialogContent>
           {deleteSucessfull && (
             <DialogContentText>
-              <CheckOutlinedIcon /> Médico deletado com sucesso!!!
+              <CheckOutlinedIcon /> Cirurgia deletada com sucesso!!!
             </DialogContentText>
           )}
           {deleteFailure && (
             <DialogContentText>
-              <WarningOutlinedIcon /> Falha ao tentar deletar médico, verifique
-              os dados e tente novamente!!!
+              <WarningOutlinedIcon /> Falha ao tentar deletar cirurgia,
+              verifique os dados e tente novamente!!!
             </DialogContentText>
           )}
-          Você realmente deseja deletar o médico {medicoName} ({medicoId})?
+          Você realmente deseja deletar a cirurgia {cirurgiaName} ({cirurgiaId}
+          )?
         </DialogContent>
         <DialogActions>
           {loadingDelete && <CircularProgress color="secondary" />}
@@ -511,7 +447,7 @@ function Medicos() {
             <Button onClick={() => closePopup()}>Sair</Button>
           )}
           {!deleteSucessfull && (
-            <Button onClick={() => handleDeleteMedico()}>Sim</Button>
+            <Button onClick={() => deleteCirurgia()}>Sim</Button>
           )}
           {!deleteSucessfull && (
             <Button onClick={() => closePopup()}>Não</Button>
@@ -522,4 +458,4 @@ function Medicos() {
   );
 }
 
-export default Medicos;
+export default Cirurgias;
