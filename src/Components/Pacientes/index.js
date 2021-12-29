@@ -60,11 +60,11 @@ function Pacientes() {
   const loadDetail = (element, newValue) => {
     const item = document.getElementById(element);
     if (item) {
-      if (item.type === "text") {
-        item.value = newValue;
-      } else {
+      if (item.type === "date") {
         const date = new Date(newValue);
         item.value = date.toISOString().substr(0, 10);
+      } else {
+        item.value = newValue;
       }
     }
   };
@@ -205,6 +205,7 @@ function Pacientes() {
       validade: getValue("validade"),
       login: getValue("login"),
       senha: getValue("senha"),
+      observation: getValue("observation"),
     };
   };
 
@@ -369,6 +370,17 @@ function Pacientes() {
               class="form-control"
               id="senha"
               placeholder="Senha"
+              readOnly={readOnly}
+            />
+          </div>
+          <div class="form-group">
+            <label for="observation">Observações</label>
+            <textarea
+              class="form-control"
+              id="observation"
+              placeholder="Observações"
+              rows="4"
+              cols="50"
               readOnly={readOnly}
             />
           </div>

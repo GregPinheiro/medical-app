@@ -411,6 +411,17 @@ function Hospitais() {
             readOnly={readOnly}
           />
         </div>
+        <div class="form-group">
+          <label for="observation">Observações</label>
+          <textarea
+            class="form-control"
+            id="observation"
+            placeholder="Observações"
+            rows="4"
+            cols="50"
+            readOnly={readOnly}
+          />
+        </div>
       </form>
     );
   };
@@ -436,6 +447,7 @@ function Hospitais() {
       email2: getValue("email2"),
       email3: getValue("email3"),
       email4: getValue("email4"),
+      observation: getValue("observation"),
     };
   };
 

@@ -217,6 +217,7 @@ function Convenios() {
       email: getValue("email"),
       plano: getValue("plano"),
       acomodacao: getValue("acomodacao"),
+      observation: getValue("observation"),
     };
   };
 
@@ -337,6 +338,17 @@ function Convenios() {
             class="form-control"
             id="acomodacao"
             placeholder="Acomodação"
+            readOnly={readOnly}
+          />
+        </div>
+        <div class="form-group">
+          <label for="observation">Observações</label>
+          <textarea
+            class="form-control"
+            id="observation"
+            placeholder="Observações"
+            rows="4"
+            cols="50"
             readOnly={readOnly}
           />
         </div>

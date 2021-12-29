@@ -263,6 +263,17 @@ function Cirurgias() {
             readOnly={readOnly}
           />
         </div>
+        <div class="form-group">
+          <label for="observation">Observações</label>
+          <textarea
+            class="form-control"
+            id="observation"
+            placeholder="Observações"
+            rows="4"
+            cols="50"
+            readOnly={readOnly}
+          />
+        </div>
       </form>
     );
   };
@@ -297,6 +308,7 @@ function Cirurgias() {
       TUSS: getValue("TUSS"),
       justificativa: getValue("justificativa"),
       materiais: getValue("materiais"),
+      observation: getValue("observation"),
     };
   };
 
