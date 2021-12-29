@@ -700,19 +700,19 @@ function Medicos() {
         <DialogContent>
           {associateSucessfull && (
             <DialogContentText>
-              <CheckOutlinedIcon /> Médico cadastrado com sucesso!!!
+              <CheckOutlinedIcon /> Associações salvas com sucesso!!!
             </DialogContentText>
           )}
           {associateFailure && (
             <DialogContentText>
-              <WarningOutlinedIcon /> Falha ao tentar cadastrar médico,
+              <WarningOutlinedIcon /> Falha ao tentar salvar associações,
               verifique os dados e tente novamente!!!
             </DialogContentText>
           )}
           {associateForm()}
         </DialogContent>
         <DialogActions>
-          {loadingNew && <CircularProgress color="secondary" />}
+          {loadingAssociate && <CircularProgress color="secondary" />}
           <Button onClick={() => closePopup()}>Sair</Button>
           <Button onClick={() => handleSetHospitais()}>Salvar</Button>
         </DialogActions>
