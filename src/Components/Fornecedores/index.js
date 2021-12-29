@@ -219,6 +219,7 @@ function Fornecedores() {
       celular: getValue("celular"),
       email: getValue("email"),
       representante: getValue("representante"),
+      observation: getValue("observation"),
     };
   };
 
@@ -339,6 +340,17 @@ function Fornecedores() {
             class="form-control"
             id="representante"
             placeholder="Representante"
+            readOnly={readOnly}
+          />
+        </div>
+        <div class="form-group">
+          <label for="observation">Observações</label>
+          <textarea
+            class="form-control"
+            id="observation"
+            placeholder="Observações"
+            rows="4"
+            cols="50"
             readOnly={readOnly}
           />
         </div>

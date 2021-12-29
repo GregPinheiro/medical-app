@@ -6,6 +6,7 @@ import {
   WarningOutlined as WarningOutlinedIcon,
   CheckOutlined as CheckOutlinedIcon,
   PostAdd as PostAddIcon,
+  DeviceHub as DeviceHubIcon,
 } from "@material-ui/icons";
 import {
   CircularProgress,
@@ -15,9 +16,12 @@ import {
   DialogContent,
   DialogTitle,
   DialogContentText,
+  Paper,
+  Checkbox,
 } from "@material-ui/core";
 
 import medicosServices from "../../services/medicos.service";
+import hospitaisServices from "../../services/hospitais.service";
 
 function Medicos() {
   const [updateTable, setUpdateTable] = useState(false);
@@ -43,6 +47,12 @@ function Medicos() {
   const [loadingDelete, setLoadingDelete] = useState(false);
   const [deleteSucessfull, setDeleteSucessfull] = useState(false);
   const [deleteFailure, setDeleteFailure] = useState(false);
+  const [popupAssociate, setPopupAssociate] = useState(false);
+  const [loadingAssociate, setLoadingAssociate] = useState(false);
+  const [associateSucessfull, setAssociateSucessfull] = useState(false);
+  const [associateFailure, setAssociateFailure] = useState(false);
+  const [hospitais, setHospitais] = useState([]);
+  const [hospitalId, setHospitalId] = useState([]);
 
   useEffect(async () => {
     const response = await medicosServices.findAll();
@@ -62,6 +72,13 @@ function Medicos() {
       for (const detail in medicoDetail) {
         loadDetail(detail, medicoDetail[detail]);
       }
+
+      let ids = [];
+      medicoDetail.Hospitais &&
+        medicoDetail.Hospitais.length > 0 &&
+        medicoDetail.Hospitais.map(({ id }) => ids.push(id));
+
+      setHospitalId(ids);
     }
   }, [medicoDetail]);
 
@@ -98,7 +115,6 @@ function Medicos() {
       setLoadingView(true);
 
       const response = await medicosServices.findOne(id);
-
       response.status == 200
         ? setMedicoDetail(response.data)
         : alert(
@@ -138,6 +154,49 @@ function Medicos() {
       e.response.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingEdit(false);
+    }
+  };
+
+  const handleAssociate = async (id) => {
+    try {
+      setLoadingAssociate(true);
+
+      const medicoResponse = await medicosServices.findOne(id);
+
+      switch (medicoResponse.status) {
+        case 200:
+          setMedicoDetail(medicoResponse.data);
+          break;
+
+        default:
+          setAssociateFailure(true);
+          alert(
+            "Falha ao buscar as informações do médicos, tente novamente mais tarde!"
+          );
+          break;
+      }
+
+      const hospitalResponse = await hospitaisServices.findAll();
+
+      switch (hospitalResponse.status) {
+        case 200:
+          setHospitais(hospitalResponse.data);
+          break;
+
+        default:
+          setAssociateFailure(true);
+          alert(
+            "Falha ao buscar as informações dos hospitais, tente novamente mais tarde!"
+          );
+      }
+
+      setPopupAssociate(true);
+      setMedicoId(id);
+    } catch (e) {
+      setAssociateFailure(true);
+      e.response.data ? alert(e.response.data) : alert(e);
+    } finally {
+      setLoadingAssociate(false);
     }
   };
 
@@ -208,6 +267,7 @@ function Medicos() {
       celular: getValue("celular"),
       email: getValue("email"),
       secretaria: getValue("secretaria"),
+      observation: getValue("observation"),
     };
   };
 
@@ -220,12 +280,7 @@ function Medicos() {
     const item = document.getElementById(element);
 
     if (item) {
-      if (item.type === "text") {
-        item.value = newValue;
-      } else {
-        const date = new Date(newValue);
-        item.value = date.toISOString().substr(0, 10);
-      }
+      item.value = newValue;
     }
   };
 
@@ -251,6 +306,11 @@ function Medicos() {
     setLoadingDelete(false);
     setDeleteSucessfull(false);
     setDeleteFailure(false);
+
+    setPopupAssociate(false);
+    setLoadingAssociate(false);
+    setAssociateSucessfull(false);
+    setAssociateFailure(false);
   };
 
   const form = () => {
@@ -372,6 +432,112 @@ function Medicos() {
             readOnly={readOnly}
           />
         </div>
+        <div class="form-group">
+          <label for="observation">Observações</label>
+          <textarea
+            class="form-control"
+            id="observation"
+            placeholder="Observações"
+            rows="4"
+            cols="50"
+            readOnly={readOnly}
+          />
+        </div>
+      </form>
+    );
+  };
+
+  const toggleHospitalId = (e) => {
+    e.target.checked
+      ? setHospitalId([...hospitalId, Number(e.target.id)])
+      : setHospitalId(hospitalId.filter((id) => id !== Number(e.target.id)));
+  };
+
+  const handleSetHospitais = async () => {
+    const data = { hospitalId };
+    setAssociateSucessfull(false);
+    setAssociateFailure(false);
+
+    try {
+      setLoadingAssociate(true);
+
+      const response = await medicosServices.setHospital(medicoId, data);
+
+      switch (response.status) {
+        case 201:
+          setAssociateSucessfull(true);
+          break;
+
+        default:
+          setAssociateFailure(true);
+      }
+    } catch (e) {
+      setAssociateFailure(true);
+      e.response.data ? alert(e.response.data) : alert(e);
+    } finally {
+      setLoadingAssociate(false);
+    }
+  };
+
+  const associateForm = () => {
+    return (
+      <form id="Form-Add-Paciente">
+        <div class="form-group">
+          <label for="nome">Nome do Médico</label>
+          <input
+            type="text"
+            class="form-control"
+            value={medicoDetail.nome}
+            readOnly={true}
+          />
+        </div>
+        <div class="row">
+          <div class="col">
+            <label for="especialidade">Especialidade</label>
+            <input
+              type="text"
+              class="form-control"
+              value={medicoDetail.especialidade}
+              readOnly={true}
+            />
+          </div>
+          <div class="col">
+            <label for="CRO_CRM">CRO/CRM</label>
+            <input
+              type="text"
+              class="form-control"
+              value={medicoDetail.CRO_CRM}
+              readOnly={true}
+            />
+          </div>
+        </div>
+        <table class="table">
+          <thead class="thead-dark">
+            <tr>
+              <th scope="col" />
+              <th scope="col">Nome</th>
+              <th scope="col">Unidade</th>
+              <th scope="col">CNPJ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {hospitais.map((item) => (
+              <tr scope="row">
+                <td>
+                  <Checkbox
+                    checked={hospitalId.includes(item.id)}
+                    color="default"
+                    id={item.id}
+                    onChange={(e) => toggleHospitalId(e)}
+                  />
+                </td>
+                <td>{item.nome}</td>
+                <td>{item.unidade}</td>
+                <td>{item.CNPJ}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </form>
     );
   };
@@ -413,9 +579,20 @@ function Medicos() {
               <td>{item.telefone}</td>
               <td>{item.celular}</td>
               <td className="td-funcoes">
-                <PageviewIcon onClick={() => handleView(item.id)} />
-                <EditIcon onClick={() => handleEdit(item.id)} />
+                <PageviewIcon
+                  titleAccess="Visualizar"
+                  onClick={() => handleView(item.id)}
+                />
+                <DeviceHubIcon
+                  titleAccess="Editar Associações"
+                  onClick={() => handleAssociate(item.id)}
+                />
+                <EditIcon
+                  titleAccess="Editar"
+                  onClick={() => handleEdit(item.id)}
+                />
                 <DeleteForeverIcon
+                  titleAccess="Deletar"
                   onClick={() => handleDelete(item.id, item.nome)}
                 />
               </td>
@@ -423,7 +600,7 @@ function Medicos() {
           ))}
         </tbody>
       </table>
-      <Dialog open={popupNew} fullWidth={true}>
+      <Dialog open={popupNew} fullWidth={true} maxWidth={"md"}>
         <DialogTitle>Cadastrar Novo Médico</DialogTitle>
         <DialogContent>
           {newSucessfull && (
@@ -449,7 +626,7 @@ function Medicos() {
           )}
         </DialogActions>
       </Dialog>
-      <Dialog open={popupView} fullWidth={true}>
+      <Dialog open={popupView} fullWidth={true} maxWidth={"md"}>
         <DialogTitle>Dados do Médico</DialogTitle>
         <DialogContent>
           {viewFailure && (
@@ -463,7 +640,7 @@ function Medicos() {
           <Button onClick={() => closePopup()}>Sair</Button>
         </DialogActions>
       </Dialog>
-      <Dialog open={popupEdit} fullWidth={true}>
+      <Dialog open={popupEdit} fullWidth={true} maxWidth={"md"}>
         <DialogTitle>Editar Dados do Médico</DialogTitle>
         <DialogContent>
           {editSucessfull && (
@@ -489,7 +666,7 @@ function Medicos() {
           )}
         </DialogActions>
       </Dialog>
-      <Dialog open={popupDelete} fullWidth={true}>
+      <Dialog open={popupDelete} fullWidth={true} maxWidth={"md"}>
         <DialogTitle>Deletar Médico</DialogTitle>
         <DialogContent>
           {deleteSucessfull && (
@@ -516,6 +693,28 @@ function Medicos() {
           {!deleteSucessfull && (
             <Button onClick={() => closePopup()}>Não</Button>
           )}
+        </DialogActions>
+      </Dialog>
+      <Dialog open={popupAssociate} fullWidth={true} maxWidth={"lg"}>
+        <DialogTitle>Associações Médico</DialogTitle>
+        <DialogContent>
+          {associateSucessfull && (
+            <DialogContentText>
+              <CheckOutlinedIcon /> Médico cadastrado com sucesso!!!
+            </DialogContentText>
+          )}
+          {associateFailure && (
+            <DialogContentText>
+              <WarningOutlinedIcon /> Falha ao tentar cadastrar médico,
+              verifique os dados e tente novamente!!!
+            </DialogContentText>
+          )}
+          {associateForm()}
+        </DialogContent>
+        <DialogActions>
+          {loadingNew && <CircularProgress color="secondary" />}
+          <Button onClick={() => closePopup()}>Sair</Button>
+          <Button onClick={() => handleSetHospitais()}>Salvar</Button>
         </DialogActions>
       </Dialog>
     </>
