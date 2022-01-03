@@ -370,7 +370,7 @@ function Cirurgias() {
           ))}
         </tbody>
       </table>
-      <Dialog open={popupNew} fullWidth={true}>
+      <Dialog open={popupNew} fullWidth={true} maxWidth={"md"}>
         <DialogTitle>Cadastrar Nova Cirurgia</DialogTitle>
         <DialogContent>
           {newSucessfull && (
@@ -396,7 +396,7 @@ function Cirurgias() {
           )}
         </DialogActions>
       </Dialog>
-      <Dialog open={popupView} fullWidth={true}>
+      <Dialog open={popupView} fullWidth={true} maxWidth={"md"}>
         <DialogTitle>Dados da Cirurgia</DialogTitle>
         <DialogContent>
           {viewFailure && (
@@ -410,7 +410,7 @@ function Cirurgias() {
           <Button onClick={() => closePopup()}>Sair</Button>
         </DialogActions>
       </Dialog>
-      <Dialog open={popupEdit} fullWidth={true}>
+      <Dialog open={popupEdit} fullWidth={true} maxWidth={"md"}>
         <DialogTitle>Editar Dados da Cirurgia</DialogTitle>
         <DialogContent>
           {editSucessfull && (
@@ -436,7 +436,7 @@ function Cirurgias() {
           )}
         </DialogActions>
       </Dialog>
-      <Dialog open={popupDelete} fullWidth={true}>
+      <Dialog open={popupDelete} fullWidth={true} maxWidth={"md"}>
         <DialogTitle>Deletar Cirurgia</DialogTitle>
         <DialogContent>
           {deleteSucessfull && (

@@ -6,6 +6,7 @@ import {
   WarningOutlined as WarningOutlinedIcon,
   CheckOutlined as CheckOutlinedIcon,
   PostAdd as PostAddIcon,
+  DeviceHub as DeviceHubIcon,
 } from "@material-ui/icons";
 import {
   CircularProgress,
@@ -15,9 +16,11 @@ import {
   DialogContent,
   DialogTitle,
   DialogContentText,
+  Checkbox,
 } from "@material-ui/core";
 
 import hospitaisServices from "../../services/hospitais.service";
+import conveniosServices from "../../services/convenios.service";
 
 function Hospitais() {
   const [updateTable, setUpdateTable] = useState(false);
@@ -43,6 +46,13 @@ function Hospitais() {
   const [loadingDelete, setLoadingDelete] = useState(false);
   const [deleteSucessfull, setDeleteSucessfull] = useState(false);
   const [deleteFailure, setDeleteFailure] = useState(false);
+  const [popupAssociate, setPopupAssociate] = useState(false);
+  const [loadingAssociate, setLoadingAssociate] = useState(false);
+  const [associateSucessfull, setAssociateSucessfull] = useState(false);
+  const [associateFailure, setAssociateFailure] = useState(false);
+  const [convenios, setConvenios] = useState([]);
+  const [filteredConvenios, setFilteredConvenios] = useState([]);
+  const [convenioId, setConvenioId] = useState([]);
 
   useEffect(async () => {
     setLoading(true);
@@ -70,6 +80,13 @@ function Hospitais() {
         loadDetail(detail, hospitalDetail[detail]);
       }
     }
+
+    let ids = [];
+    hospitalDetail.Convenios &&
+      hospitalDetail.Convenios.length > 0 &&
+      hospitalDetail.Convenios.map(({ id }) => ids.push(id));
+
+    setConvenioId(ids);
   }, [hospitalDetail]);
 
   const handleSave = async () => {
@@ -203,6 +220,49 @@ function Hospitais() {
     } finally {
       setUpdateTable(true);
       setLoadingDelete(false);
+    }
+  };
+
+  const handleAssociate = async (id) => {
+    try {
+      setLoadingAssociate(true);
+
+      const hospitalResponse = await hospitaisServices.findOne(id);
+
+      switch (hospitalResponse.status) {
+        case 200:
+          setHospitalDetail(hospitalResponse.data);
+          break;
+
+        default:
+          setAssociateFailure(true);
+          alert(
+            "Falha ao buscar as informações do hospital, tente novamente mais tarde!"
+          );
+      }
+
+      const convenioResponse = await conveniosServices.findAll();
+
+      switch (convenioResponse.status) {
+        case 200:
+          setConvenios(convenioResponse.data);
+          setFilteredConvenios(convenioResponse.data);
+          break;
+
+        default:
+          setAssociateFailure(true);
+          alert(
+            "Falha ao buscar as informações dos convênios, tente novamente mais tarde!"
+          );
+      }
+
+      setPopupAssociate(true);
+      setHospitalId(id);
+    } catch (e) {
+      setAssociateFailure(true);
+      e.response.data ? alert(e.response.data) : alert(e);
+    } finally {
+      setLoadingAssociate(false);
     }
   };
 
@@ -426,6 +486,122 @@ function Hospitais() {
     );
   };
 
+  const toggleConvenioId = (e) => {
+    e.target.checked
+      ? setConvenioId([...convenioId, Number(e.target.id)])
+      : setConvenioId(convenioId.filter((id) => id !== Number(e.target.id)));
+  };
+
+  const handleSetConvenios = async () => {
+    const data = { convenioId };
+    setAssociateSucessfull(false);
+    setAssociateFailure(false);
+
+    try {
+      setLoadingAssociate(true);
+
+      const response = await hospitaisServices.setConvenio(hospitalId, data);
+
+      switch (response.status) {
+        case 201:
+          setAssociateSucessfull(true);
+          break;
+
+        default:
+          setAssociateFailure(true);
+      }
+    } catch (e) {
+      setAssociateFailure(true);
+      e.response.data ? alert(e.response.data) : alert(e);
+    } finally {
+      setLoadingAssociate(false);
+    }
+  };
+
+  const filterConvenios = (e) => {
+    setFilteredConvenios(
+      e.target.value
+        ? convenios.filter((convenio) => convenio.nome.includes(e.target.value))
+        : convenios
+    );
+  };
+
+  const associateForm = () => {
+    return (
+      <form id="Form-Add-Paciente">
+        <div class="form-group">
+          <label for="nome">Nome do Hospital</label>
+          <input
+            type="text"
+            class="form-control"
+            value={hospitalDetail.nome}
+            readOnly={true}
+          />
+        </div>
+        <div class="row">
+          <div class="col">
+            <label for="especialidade">Unidade</label>
+            <input
+              type="text"
+              class="form-control"
+              value={hospitalDetail.unidade}
+              readOnly={true}
+            />
+          </div>
+          <div class="col">
+            <label for="CRO_CRM">CNPJ</label>
+            <input
+              type="text"
+              class="form-control"
+              value={hospitalDetail.CNPJ}
+              readOnly={true}
+            />
+          </div>
+        </div>
+        <div class="row" style={{ marginTop: "20px" }}>
+          <div class="col">
+            <h5>Convênios</h5>
+          </div>
+          <div class="col">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Filtro"
+              onChange={filterConvenios}
+            />
+          </div>
+        </div>
+        <table class="table">
+          <thead class="thead-dark">
+            <tr>
+              <th scope="col" />
+              <th scope="col">Nome</th>
+              <th scope="col">Plano</th>
+              <th scope="col">Acomodação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredConvenios.map((item) => (
+              <tr scope="row">
+                <td>
+                  <Checkbox
+                    checked={convenioId.includes(item.id)}
+                    color="default"
+                    id={item.id}
+                    onChange={(e) => toggleConvenioId(e)}
+                  />
+                </td>
+                <td>{item.nome}</td>
+                <td>{item.plano}</td>
+                <td>{item.acomodacao}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </form>
+    );
+  };
+
   const getBody = () => {
     return {
       nome: getValue("nome"),
@@ -485,6 +661,11 @@ function Hospitais() {
     setLoadingDelete(false);
     setDeleteSucessfull(false);
     setDeleteFailure(false);
+
+    setPopupAssociate(false);
+    setLoadingAssociate(false);
+    setAssociateSucessfull(false);
+    setAssociateFailure(false);
   };
 
   return (
@@ -528,9 +709,20 @@ function Hospitais() {
               <td>{item.telefone1}</td>
               <td>{item.contato1}</td>
               <td className="td-funcoes">
-                <PageviewIcon onClick={() => handleView(item.id)} />
-                <EditIcon onClick={() => handleEdit(item.id)} />
+                <PageviewIcon
+                  titleAccess="Visualizar"
+                  onClick={() => handleView(item.id)}
+                />
+                <DeviceHubIcon
+                  titleAccess="Associações"
+                  onClick={() => handleAssociate(item.id)}
+                />
+                <EditIcon
+                  titleAccess="Editar"
+                  onClick={() => handleEdit(item.id)}
+                />
                 <DeleteForeverIcon
+                  titleAccess="Deletar"
                   onClick={() => handleDelete(item.id, item.nome)}
                 />
               </td>
@@ -538,7 +730,7 @@ function Hospitais() {
           ))}
         </tbody>
       </table>
-      <Dialog open={popupNew} fullWidth={true}>
+      <Dialog open={popupNew} fullWidth={true} maxWidth={"md"}>
         <DialogTitle>Cadastrar Novo Hospital</DialogTitle>
         <DialogContent>
           {newSucessfull && (
@@ -564,7 +756,7 @@ function Hospitais() {
           )}
         </DialogActions>
       </Dialog>
-      <Dialog open={popupView} fullWidth={true}>
+      <Dialog open={popupView} fullWidth={true} maxWidth={"md"}>
         <DialogTitle>Dados do Hospital</DialogTitle>
         <DialogContent>
           {viewFailure && (
@@ -578,7 +770,7 @@ function Hospitais() {
           <Button onClick={() => closePopup()}>Sair</Button>
         </DialogActions>
       </Dialog>
-      <Dialog open={popupEdit} fullWidth={true}>
+      <Dialog open={popupEdit} fullWidth={true} maxWidth={"md"}>
         <DialogTitle>Editar Dados do Hospital</DialogTitle>
         <DialogContent>
           {editSucessfull && (
@@ -604,7 +796,7 @@ function Hospitais() {
           )}
         </DialogActions>
       </Dialog>
-      <Dialog open={popupDelete} fullWidth={true}>
+      <Dialog open={popupDelete} fullWidth={true} maxWidth={"md"}>
         <DialogTitle>Deletar Hospital</DialogTitle>
         <DialogContent>
           {deleteSucessfull && (
@@ -632,6 +824,28 @@ function Hospitais() {
           {!deleteSucessfull && (
             <Button onClick={() => closePopup()}>Não</Button>
           )}
+        </DialogActions>
+      </Dialog>
+      <Dialog open={popupAssociate} fullWidth={true} maxWidth={"lg"}>
+        <DialogTitle>Associações Hospitais</DialogTitle>
+        <DialogContent>
+          {associateSucessfull && (
+            <DialogContentText>
+              <CheckOutlinedIcon /> Associações salvas com sucesso!!!
+            </DialogContentText>
+          )}
+          {associateFailure && (
+            <DialogContentText>
+              <WarningOutlinedIcon /> Falha ao tentar salvar associações,
+              verifique os dados e tente novamente!!!
+            </DialogContentText>
+          )}
+          {associateForm()}
+        </DialogContent>
+        <DialogActions>
+          {loadingAssociate && <CircularProgress color="secondary" />}
+          <Button onClick={() => closePopup()}>Sair</Button>
+          <Button onClick={() => handleSetConvenios()}>Salvar</Button>
         </DialogActions>
       </Dialog>
     </>

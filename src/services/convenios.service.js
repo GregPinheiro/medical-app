@@ -20,6 +20,10 @@ class DataService {
   delete(id) {
     return api.delete(`/convenios/${id}`);
   }
+
+  setHospitais(id, data) {
+    return api.post(`/convenios/hospitais/${id}`, data);
+  }
 }
 
 export default new DataService();
