@@ -10,7 +10,11 @@ function Navbar() {
       <div className="userMenu">
         <li className="nav-item">
           <p className="nav-link">
-            Olá, {user.name} (<a onClick={handleLogout}>sair</a>)
+            Olá, {user.name} (
+            <a style={{ margin: "20px 0" }} onClick={handleLogout}>
+              sair
+            </a>
+            )
           </p>
         </li>
       </div>

@@ -432,7 +432,7 @@ function Fornecedores() {
           ))}
         </tbody>
       </table>
-      <Dialog open={popupNew} fullWidth={true}>
+      <Dialog open={popupNew} fullWidth={true} maxWidth={"md"}>
         <DialogTitle>Cadastrar Novo Fornecedor</DialogTitle>
         <DialogContent>
           {newSucessfull && (
@@ -458,7 +458,7 @@ function Fornecedores() {
           )}
         </DialogActions>
       </Dialog>
-      <Dialog open={popupView} fullWidth={true}>
+      <Dialog open={popupView} fullWidth={true} maxWidth={"md"}>
         <DialogTitle>Dados do Fornecedor</DialogTitle>
         <DialogContent>
           {viewFailure && (
@@ -472,7 +472,7 @@ function Fornecedores() {
           <Button onClick={() => closePopup()}>Sair</Button>
         </DialogActions>
       </Dialog>
-      <Dialog open={popupEdit} fullWidth={true}>
+      <Dialog open={popupEdit} fullWidth={true} maxWidth={"md"}>
         <DialogTitle>Editar Dados do Fornecedor</DialogTitle>
         <DialogContent>
           {editSucessfull && (
@@ -498,7 +498,7 @@ function Fornecedores() {
           )}
         </DialogActions>
       </Dialog>
-      <Dialog open={popupDelete} fullWidth={true}>
+      <Dialog open={popupDelete} fullWidth={true} maxWidth={"md"}>
         <DialogTitle>Deletar Fornecedor</DialogTitle>
         <DialogContent>
           {deleteSucessfull && (

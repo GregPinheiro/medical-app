@@ -16,7 +16,6 @@ import {
   DialogContent,
   DialogTitle,
   DialogContentText,
-  Paper,
   Checkbox,
 } from "@material-ui/core";
 
@@ -52,6 +51,7 @@ function Medicos() {
   const [associateSucessfull, setAssociateSucessfull] = useState(false);
   const [associateFailure, setAssociateFailure] = useState(false);
   const [hospitais, setHospitais] = useState([]);
+  const [filteredHospitais, setFilteredHospitais] = useState([]);
   const [hospitalId, setHospitalId] = useState([]);
 
   useEffect(async () => {
@@ -181,6 +181,7 @@ function Medicos() {
       switch (hospitalResponse.status) {
         case 200:
           setHospitais(hospitalResponse.data);
+          setFilteredHospitais(hospitalResponse.data);
           break;
 
         default:
@@ -479,6 +480,14 @@ function Medicos() {
     }
   };
 
+  const filterHospitais = (e) => {
+    setFilteredHospitais(
+      e.target.value
+        ? hospitais.filter((hospital) => hospital.nome.includes(e.target.value))
+        : hospitais
+    );
+  };
+
   const associateForm = () => {
     return (
       <form id="Form-Add-Paciente">
@@ -511,6 +520,19 @@ function Medicos() {
             />
           </div>
         </div>
+        <div class="row" style={{ marginTop: "20px" }}>
+          <div class="col">
+            <h5>Hospitais</h5>
+          </div>
+          <div class="col">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Filtro"
+              onChange={filterHospitais}
+            />
+          </div>
+        </div>
         <table class="table">
           <thead class="thead-dark">
             <tr>
@@ -521,7 +543,7 @@ function Medicos() {
             </tr>
           </thead>
           <tbody>
-            {hospitais.map((item) => (
+            {filteredHospitais.map((item) => (
               <tr scope="row">
                 <td>
                   <Checkbox
@@ -537,6 +559,7 @@ function Medicos() {
               </tr>
             ))}
           </tbody>
+          {filteredHospitais.length == 0 && <h5>No content</h5>}
         </table>
       </form>
     );
@@ -584,7 +607,7 @@ function Medicos() {
                   onClick={() => handleView(item.id)}
                 />
                 <DeviceHubIcon
-                  titleAccess="Editar Associações"
+                  titleAccess="Associações"
                   onClick={() => handleAssociate(item.id)}
                 />
                 <EditIcon

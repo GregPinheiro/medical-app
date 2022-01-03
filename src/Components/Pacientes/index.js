@@ -323,6 +323,17 @@ function Pacientes() {
           />
         </div>
         <div class="form-group">
+          <label for="convenio">Convênio</label>
+          <input
+            type="text"
+            class="form-control"
+            id="convenio"
+            placeholder="Convêno"
+            readOnly={true}
+          />
+          <button>Search</button>
+        </div>
+        <div class="form-group">
           <label for="noCarteirinha">No Carteirinha</label>
           <input
             type="text"
@@ -436,7 +447,7 @@ function Pacientes() {
         </tbody>
       </table>
       <div>
-        <Dialog open={openPopup} fullWidth={true}>
+        <Dialog open={openPopup} fullWidth={true} maxWidth={"md"}>
           <DialogTitle>Cadastrar Novo Paciente</DialogTitle>
           <DialogContent>
             {saveSceneSucessfull && (
@@ -464,7 +475,7 @@ function Pacientes() {
         </Dialog>
       </div>
       <div>
-        <Dialog open={popupDelete} fullWidth={true}>
+        <Dialog open={popupDelete} fullWidth={true} maxWidth={"md"}>
           <DialogTitle>Deletar Paciente</DialogTitle>
           <DialogContent>
             {deleteSucessfull && (
@@ -496,7 +507,7 @@ function Pacientes() {
         </Dialog>
       </div>
       <div>
-        <Dialog open={popupView} fullWidth={true}>
+        <Dialog open={popupView} fullWidth={true} maxWidth={"md"}>
           <DialogTitle>Dados do Paciente</DialogTitle>
           <DialogContent>{form()}</DialogContent>
           <DialogActions>
@@ -505,7 +516,7 @@ function Pacientes() {
         </Dialog>
       </div>
       <div>
-        <Dialog open={popupEdit} fullWidth={true}>
+        <Dialog open={popupEdit} fullWidth={true} maxWidth={"md"}>
           <DialogTitle>Editar Dados do Paciente</DialogTitle>
           <DialogContent>
             {editSucessfull && (
