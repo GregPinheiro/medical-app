@@ -82,9 +82,9 @@ function Convenios() {
     }
 
     let ids = [];
-    ConvenioDetail.Hospitais &&
-      ConvenioDetail.Hospitais.length > 0 &&
-      ConvenioDetail.Hospitais.map(({ id }) => ids.push(id));
+    ConvenioDetail.hospitais &&
+      ConvenioDetail.hospitais.length > 0 &&
+      ConvenioDetail.hospitais.map(({ id }) => ids.push(id));
 
     setHospitalId(ids);
   }, [ConvenioDetail]);
@@ -108,7 +108,7 @@ function Convenios() {
       }
     } catch (e) {
       setNewFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingNew(false);
     }
@@ -134,7 +134,7 @@ function Convenios() {
       }
     } catch (e) {
       setViewFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingView(false);
     }
@@ -162,7 +162,7 @@ function Convenios() {
       }
     } catch (e) {
       setEditFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingEdit(false);
     }
@@ -186,7 +186,7 @@ function Convenios() {
       }
     } catch (e) {
       setEditFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setUpdateTable(true);
       setLoadingEdit(false);
@@ -214,7 +214,7 @@ function Convenios() {
           setDeleteFailure(true);
       }
     } catch (e) {
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
       setDeleteFailure(true);
     } finally {
       setUpdateTable(true);
@@ -258,7 +258,7 @@ function Convenios() {
       setConvenioId(id);
     } catch (e) {
       setAssociateFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingAssociate(false);
     }
@@ -441,7 +441,7 @@ function Convenios() {
       }
     } catch (e) {
       setAssociateFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingAssociate(false);
     }

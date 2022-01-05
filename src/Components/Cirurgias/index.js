@@ -6,6 +6,7 @@ import {
   WarningOutlined as WarningOutlinedIcon,
   CheckOutlined as CheckOutlinedIcon,
   PostAdd as PostAddIcon,
+  Search as SearchIcon,
 } from "@material-ui/icons";
 import {
   CircularProgress,
@@ -15,9 +16,11 @@ import {
   DialogContent,
   DialogTitle,
   DialogContentText,
+  Checkbox,
 } from "@material-ui/core";
 
 import cirurgiasServices from "../../services/cirurgias.service";
+import fornecedoresServices from "../../services/fornecedores.service";
 
 function Cirurgias() {
   const [updateTable, setUpdateTable] = useState(false);
@@ -43,6 +46,10 @@ function Cirurgias() {
   const [loadingDelete, setLoadingDelete] = useState(false);
   const [deleteSucessfull, setDeleteSucessfull] = useState(false);
   const [deleteFailure, setDeleteFailure] = useState(false);
+  const [popupSearchFornecedores, setPopupSearchFornecedores] = useState(false);
+  const [fornecedores, setFornecedores] = useState([]);
+  const [filteredFornecedores, setFilteredFornecedores] = useState([]);
+  const [fornecedorId, setFornecedorId] = useState([]);
 
   useEffect(async () => {
     setLoading(true);
@@ -69,8 +76,44 @@ function Cirurgias() {
       for (const detail in cirurgiaDetail) {
         loadDetail(detail, cirurgiaDetail[detail]);
       }
+
+      setFornecedorId(
+        cirurgiaDetail.fornecedor ? cirurgiaDetail.fornecedor.id : 0
+      );
     }
   }, [cirurgiaDetail]);
+
+  useEffect(async () => {
+    try {
+      const response = await fornecedoresServices.findAll();
+
+      switch (response.status) {
+        case 200:
+          setFornecedores(response.data);
+          setFilteredFornecedores(response.data);
+          break;
+
+        default:
+          alert("Não foi possível carregar os dados dos fornecedores");
+      }
+    } catch (e) {
+      e.response?.data ? alert(e.response.data) : alert(e);
+    }
+
+    (popupSearchFornecedores || popupView) && setFornecedorId(0);
+  }, [popupSearchFornecedores, popupView]);
+
+  useEffect(() => {
+    if (fornecedorId > 0) {
+      const fornecedor = fornecedores.find(({ id }) => id == fornecedorId);
+
+      loadDetail(
+        "fornecedor",
+        `${fornecedor.nome}
+         ${fornecedor.CNPJ}`
+      );
+    }
+  }, [fornecedorId]);
 
   const createCirurgia = async () => {
     const body = getBody();
@@ -91,7 +134,7 @@ function Cirurgias() {
       }
     } catch (e) {
       setNewFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingNew(false);
     }
@@ -118,7 +161,7 @@ function Cirurgias() {
       }
     } catch (e) {
       setViewFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingView(false);
     }
@@ -146,7 +189,7 @@ function Cirurgias() {
       }
     } catch (e) {
       setEditFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingEdit(false);
     }
@@ -170,7 +213,7 @@ function Cirurgias() {
       }
     } catch (e) {
       setEditFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setUpdateTable(true);
       setLoadingEdit(false);
@@ -198,7 +241,7 @@ function Cirurgias() {
           setDeleteFailure(true);
       }
     } catch (e) {
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
       setDeleteFailure(true);
     } finally {
       setUpdateTable(true);
@@ -264,6 +307,22 @@ function Cirurgias() {
           />
         </div>
         <div class="form-group">
+          <label for="fornecedor">Fornecedor</label>
+          <input
+            type="text"
+            class="form-control"
+            id="fornecedor"
+            placeholder="Fornecedor"
+            readOnly={true}
+          />
+          {(popupNew || popupEdit) && (
+            <SearchIcon
+              style={{ cursor: "pointer" }}
+              onClick={() => setPopupSearchFornecedores(true)}
+            />
+          )}
+        </div>
+        <div class="form-group">
           <label for="observation">Observações</label>
           <textarea
             class="form-control"
@@ -301,6 +360,50 @@ function Cirurgias() {
     setDeleteFailure(false);
   };
 
+  const filterFornecedores = (e) => {
+    setFilteredFornecedores(
+      e.target.value
+        ? fornecedores.filter(({ nome }) => nome.includes(e.target.value))
+        : fornecedores
+    );
+  };
+
+  const selectFornecedor = (e) => {
+    if (e.target.checked) {
+      setFornecedorId(e.target.id);
+      setPopupSearchFornecedores(false);
+    }
+  };
+
+  const fornecedoresTable = () => {
+    return (
+      <table class="table">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col" />
+            <th scope="col">Nome</th>
+            <th scope="col">CNPJ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredFornecedores.map((item) => (
+            <tr scope="row">
+              <td>
+                <Checkbox
+                  color="default"
+                  id={item.id}
+                  onChange={(e) => selectFornecedor(e)}
+                />
+              </td>
+              <td>{item.nome}</td>
+              <td>{item.CNPJ}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  };
+
   const getBody = () => {
     return {
       nome: getValue("nome"),
@@ -309,6 +412,7 @@ function Cirurgias() {
       justificativa: getValue("justificativa"),
       materiais: getValue("materiais"),
       observation: getValue("observation"),
+      fornecedorId,
     };
   };
 
@@ -465,6 +569,20 @@ function Cirurgias() {
             <Button onClick={() => closePopup()}>Não</Button>
           )}
         </DialogActions>
+      </Dialog>
+      <Dialog open={popupSearchFornecedores} fullWidth={true}>
+        <DialogTitle>Buscar do Fornecedores</DialogTitle>
+        <DialogContent>
+          <div class="col">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Filtro"
+              onChange={filterFornecedores}
+            />
+          </div>
+          {fornecedoresTable()}
+        </DialogContent>
       </Dialog>
     </>
   );

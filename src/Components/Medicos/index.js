@@ -74,9 +74,9 @@ function Medicos() {
       }
 
       let ids = [];
-      medicoDetail.Hospitais &&
-        medicoDetail.Hospitais.length > 0 &&
-        medicoDetail.Hospitais.map(({ id }) => ids.push(id));
+      medicoDetail.hospitais &&
+        medicoDetail.hospitais.length > 0 &&
+        medicoDetail.hospitais.map(({ id }) => ids.push(id));
 
       setHospitalId(ids);
     }
@@ -100,7 +100,7 @@ function Medicos() {
       }
     } catch (e) {
       setNewFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingNew(false);
       setUpdateTable(true);
@@ -122,7 +122,7 @@ function Medicos() {
           );
     } catch (e) {
       setViewFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingView(false);
     }
@@ -151,7 +151,7 @@ function Medicos() {
       }
     } catch (e) {
       setEditFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingEdit(false);
     }
@@ -195,7 +195,7 @@ function Medicos() {
       setMedicoId(id);
     } catch (e) {
       setAssociateFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingAssociate(false);
     }
@@ -219,7 +219,7 @@ function Medicos() {
       }
     } catch (e) {
       setEditFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setUpdateTable(true);
       setLoadingEdit(false);
@@ -247,7 +247,7 @@ function Medicos() {
           setDeleteFailure(true);
       }
     } catch (e) {
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
       setDeleteFailure(true);
     } finally {
       setUpdateTable(true);
@@ -474,7 +474,7 @@ function Medicos() {
       }
     } catch (e) {
       setAssociateFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingAssociate(false);
     }

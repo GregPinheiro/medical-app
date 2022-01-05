@@ -6,6 +6,7 @@ import {
   WarningOutlined as WarningOutlinedIcon,
   CheckOutlined as CheckOutlinedIcon,
   PostAdd as PostAddIcon,
+  Search as SearchIcon,
 } from "@material-ui/icons";
 import {
   CircularProgress,
@@ -15,9 +16,12 @@ import {
   DialogContent,
   DialogTitle,
   DialogContentText,
+  Checkbox,
 } from "@material-ui/core";
 
 import pacientesServices from "../../services/pacientes.service";
+import conveniosServices from "../../services/convenios.service";
+import medicosServices from "../../services/medicos.service";
 
 function Pacientes() {
   const [pacientes, setPacientes] = useState([]);
@@ -37,6 +41,14 @@ function Pacientes() {
   const [editFailure, setEditFailure] = useState(false);
   const [pacienteId, setPacienteId] = useState(0);
   const [pacienteName, setPacienteName] = useState("");
+  const [popupSearchConvenio, setPopupSearchConvenio] = useState(false);
+  const [convenios, setConvenios] = useState([]);
+  const [filteredConvenios, setFilteredConvenios] = useState([]);
+  const [convenioId, setConvenioId] = useState(null);
+  const [popupSearchMedico, setPopupSearchMedico] = useState(false);
+  const [medicos, setMedicos] = useState([]);
+  const [filteredMedicos, setFilteredMedicos] = useState([]);
+  const [medicoId, setMedicoId] = useState(null);
 
   useEffect(async () => {
     const response = await pacientesServices.findAll();
@@ -54,8 +66,79 @@ function Pacientes() {
       for (const detail in pacienteDetail) {
         loadDetail(detail, pacienteDetail[detail]);
       }
+
+      setConvenioId(pacienteDetail.convenio ? pacienteDetail.convenio.id : 0);
+      setMedicoId(pacienteDetail.medico ? pacienteDetail.medico.id : 0);
     }
   }, [pacienteDetail]);
+
+  useEffect(async () => {
+    if (popupSearchConvenio) {
+      try {
+        const response = await conveniosServices.findAll();
+
+        switch (response.status) {
+          case 200:
+            setConvenios(response.data);
+            setFilteredConvenios(response.data);
+            break;
+
+          default:
+            alert("Não foi possível carregar os dados dos convênios");
+        }
+      } catch (e) {
+        e.response?.data ? alert(e.response.data) : alert(e);
+      }
+    }
+
+    (popupSearchConvenio || popupView) && setConvenioId(0);
+  }, [popupSearchConvenio, popupView]);
+
+  useEffect(() => {
+    if (convenioId > 0) {
+      const convenio = convenios.find(({ id }) => id == convenioId);
+      loadDetail(
+        "convenio",
+        `${convenio.nome ? convenio.nome : ""}
+         ${convenio.plano ? convenio.plano : ""}
+         ${convenio.acomodacao ? convenio.acomodacao : ""}`
+      );
+    }
+  }, [convenioId]);
+
+  useEffect(async () => {
+    if (popupSearchMedico) {
+      try {
+        const response = await medicosServices.findAll();
+
+        switch (response.status) {
+          case 200:
+            setMedicos(response.data);
+            setFilteredMedicos(response.data);
+            break;
+
+          default:
+            alert("Não foi possível carregar os dados dos médicos");
+        }
+      } catch (e) {
+        e.response?.data ? alert(e.response.data) : alert(e);
+      }
+    }
+
+    (popupSearchMedico || popupView) && setMedicoId(0);
+  }, [popupSearchMedico, popupView]);
+
+  useEffect(() => {
+    if (medicoId > 0) {
+      const medico = medicos.find(({ id }) => id == medicoId);
+      loadDetail(
+        "medico",
+        `${medico.nome ? medico.nome : ""}
+         ${medico.especialidade ? medico.especialidade : ""}
+         ${medico.CRO_CRM ? medico.CRO_CRM : ""}`
+      );
+    }
+  }, [medicoId]);
 
   const loadDetail = (element, newValue) => {
     const item = document.getElementById(element);
@@ -78,7 +161,7 @@ function Pacientes() {
 
       response.status == 200 && setPacienteDetail(response.data);
     } catch (e) {
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     }
   };
 
@@ -92,7 +175,7 @@ function Pacientes() {
 
       response.status == 200 && setPacienteDetail(response.data);
     } catch (e) {
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     }
   };
 
@@ -120,7 +203,7 @@ function Pacientes() {
       }
     } catch (e) {
       setSaveSceneFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingSceneInfo(false);
     }
@@ -144,7 +227,7 @@ function Pacientes() {
       }
     } catch (e) {
       setEditSucessfull(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingSceneInfo(false);
     }
@@ -206,6 +289,8 @@ function Pacientes() {
       login: getValue("login"),
       senha: getValue("senha"),
       observation: getValue("observation"),
+      convenioId,
+      medicoId,
     };
   };
 
@@ -328,10 +413,15 @@ function Pacientes() {
             type="text"
             class="form-control"
             id="convenio"
-            placeholder="Convêno"
+            placeholder="Convênio"
             readOnly={true}
           />
-          <button>Search</button>
+          {(openPopup || popupEdit) && (
+            <SearchIcon
+              style={{ cursor: "pointer" }}
+              onClick={() => setPopupSearchConvenio(true)}
+            />
+          )}
         </div>
         <div class="form-group">
           <label for="noCarteirinha">No Carteirinha</label>
@@ -385,6 +475,22 @@ function Pacientes() {
             />
           </div>
           <div class="form-group">
+            <label for="medico">Médico</label>
+            <input
+              type="text"
+              class="form-control"
+              id="medico"
+              placeholder="Médico"
+              readOnly={true}
+            />
+            {(openPopup || popupEdit) && (
+              <SearchIcon
+                style={{ cursor: "pointer" }}
+                onClick={() => setPopupSearchMedico(true)}
+              />
+            )}
+          </div>
+          <div class="form-group">
             <label for="observation">Observações</label>
             <textarea
               class="form-control"
@@ -397,6 +503,98 @@ function Pacientes() {
           </div>
         </div>
       </form>
+    );
+  };
+
+  const filterConvenios = (e) => {
+    setFilteredConvenios(
+      e.target.value
+        ? convenios.filter((convenio) => convenio.nome.includes(e.target.value))
+        : convenios
+    );
+  };
+
+  const selectConvenio = (e) => {
+    if (e.target.checked) {
+      setConvenioId(e.target.id);
+      setPopupSearchConvenio(false);
+    }
+  };
+
+  const convenioTable = () => {
+    return (
+      <table class="table">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col" />
+            <th scope="col">Nome</th>
+            <th scope="col">Plano</th>
+            <th scope="col">Acomodação</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredConvenios.map((item) => (
+            <tr scope="row">
+              <td>
+                <Checkbox
+                  color="default"
+                  id={item.id}
+                  onChange={(e) => selectConvenio(e)}
+                />
+              </td>
+              <td>{item.nome}</td>
+              <td>{item.plano}</td>
+              <td>{item.acomodacao}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  };
+
+  const filterMedicos = (e) => {
+    setFilteredMedicos(
+      e.target.value
+        ? medicos.filter(({ nome }) => nome.includes(e.target.value))
+        : medicos
+    );
+  };
+
+  const selectMedico = (e) => {
+    if (e.target.checked) {
+      setMedicoId(e.target.id);
+      setPopupSearchMedico(false);
+    }
+  };
+
+  const medicoTable = () => {
+    return (
+      <table class="table">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col" />
+            <th scope="col">Nome</th>
+            <th scope="col">Plano</th>
+            <th scope="col">Acomodação</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredMedicos.map((item) => (
+            <tr scope="row">
+              <td>
+                <Checkbox
+                  color="default"
+                  id={item.id}
+                  onChange={(e) => selectMedico(e)}
+                />
+              </td>
+              <td>{item.nome}</td>
+              <td>{item.especialidade}</td>
+              <td>{item.CRO_CRM}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     );
   };
 
@@ -543,6 +741,34 @@ function Pacientes() {
           </DialogActions>
         </Dialog>
       </div>
+      <Dialog open={popupSearchConvenio} fullWidth={true}>
+        <DialogTitle>Buscar do Convênio</DialogTitle>
+        <DialogContent>
+          <div class="col">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Filtro"
+              onChange={filterConvenios}
+            />
+          </div>
+          {convenioTable()}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={popupSearchMedico} fullWidth={true}>
+        <DialogTitle>Buscar do Médico</DialogTitle>
+        <DialogContent>
+          <div class="col">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Filtro"
+              onChange={filterMedicos}
+            />
+          </div>
+          {medicoTable()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
