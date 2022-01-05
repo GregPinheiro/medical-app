@@ -91,7 +91,7 @@ function Fornecedores() {
       }
     } catch (e) {
       setNewFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingNew(false);
     }
@@ -119,7 +119,7 @@ function Fornecedores() {
       }
     } catch (e) {
       setViewFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingView(false);
     }
@@ -147,7 +147,7 @@ function Fornecedores() {
       }
     } catch (e) {
       setEditFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingEdit(false);
     }
@@ -171,7 +171,7 @@ function Fornecedores() {
       }
     } catch (e) {
       setEditFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setUpdateTable(true);
       setLoadingEdit(false);
@@ -199,7 +199,7 @@ function Fornecedores() {
           setDeleteFailure(true);
       }
     } catch (e) {
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
       setDeleteFailure(true);
     } finally {
       setUpdateTable(true);

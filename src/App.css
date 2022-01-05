@@ -36,3 +36,14 @@ a {
   margin: 10px 20px;
   cursor: pointer;
 }
+
+td {
+  /* textOverflow: "ellipsis",
+  overflow: "hidden",
+  maxWidth: "25ch",
+  whiteSpace: "nowrap", */
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 20vw;
+  white-space: nowrap;
+}

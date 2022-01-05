@@ -82,9 +82,9 @@ function Hospitais() {
     }
 
     let ids = [];
-    hospitalDetail.Convenios &&
-      hospitalDetail.Convenios.length > 0 &&
-      hospitalDetail.Convenios.map(({ id }) => ids.push(id));
+    hospitalDetail.convenios &&
+      hospitalDetail.convenios.length > 0 &&
+      hospitalDetail.convenios.map(({ id }) => ids.push(id));
 
     setConvenioId(ids);
   }, [hospitalDetail]);
@@ -108,7 +108,7 @@ function Hospitais() {
       }
     } catch (e) {
       setNewFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingNew(false);
     }
@@ -135,7 +135,7 @@ function Hospitais() {
       }
     } catch (e) {
       setViewFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingView(false);
     }
@@ -163,7 +163,7 @@ function Hospitais() {
       }
     } catch (e) {
       setEditFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingEdit(false);
     }
@@ -187,7 +187,7 @@ function Hospitais() {
       }
     } catch (e) {
       setEditFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setUpdateTable(true);
       setLoadingEdit(false);
@@ -215,7 +215,7 @@ function Hospitais() {
           setDeleteFailure(true);
       }
     } catch (e) {
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
       setDeleteFailure(true);
     } finally {
       setUpdateTable(true);
@@ -260,7 +260,7 @@ function Hospitais() {
       setHospitalId(id);
     } catch (e) {
       setAssociateFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingAssociate(false);
     }
@@ -512,7 +512,7 @@ function Hospitais() {
       }
     } catch (e) {
       setAssociateFailure(true);
-      e.response.data ? alert(e.response.data) : alert(e);
+      e.response?.data ? alert(e.response.data) : alert(e);
     } finally {
       setLoadingAssociate(false);
     }
