@@ -681,7 +681,7 @@ function Hospitais() {
           />
         </p>
       </div>
-      <table class="table table-dark">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th scope="col">ID</th>
@@ -698,8 +698,8 @@ function Hospitais() {
         </thead>
         <tbody>
           {hospitais.map((item) => (
-            <tr scope="row">
-              <td>{item.id}</td>
+            <tr>
+              <th scope="row">{item.id}</th>
               <td>{item.nome}</td>
               <td>{item.unidade}</td>
               <td>{item.CNPJ}</td>

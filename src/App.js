@@ -10,6 +10,7 @@ import Convenios from "./Components/Convenios";
 import Hospitais from "./Components/Hospitais";
 import Cirurgias from "./Components/Cirurgias";
 import Fornecedores from "./Components/Fornecedores";
+import Consultas from "./Components/Consulta";
 
 function App() {
   return (
@@ -18,6 +19,10 @@ function App() {
 
       <Route path="/user/signin">
         <Signin />
+      </Route>
+
+      <Route path="/consultas">
+        <Consultas />
       </Route>
 
       <Route path="/pacientes">

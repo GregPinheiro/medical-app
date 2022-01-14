@@ -578,7 +578,7 @@ function Medicos() {
           />
         </p>
       </div>
-      <table class="table table-dark">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th scope="col">ID</th>
@@ -593,8 +593,8 @@ function Medicos() {
         </thead>
         <tbody>
           {medicos.map((item) => (
-            <tr scope="row">
-              <td>{item.id}</td>
+            <tr>
+              <th scope="row">{item.id}</th>
               <td>{item.nome}</td>
               <td>{item.especialidade}</td>
               <td>{item.CRO_CRM}</td>

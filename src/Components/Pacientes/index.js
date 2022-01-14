@@ -73,22 +73,20 @@ function Pacientes() {
   }, [pacienteDetail]);
 
   useEffect(async () => {
-    if (popupSearchConvenio) {
-      try {
-        const response = await conveniosServices.findAll();
+    try {
+      const response = await conveniosServices.findAll();
 
-        switch (response.status) {
-          case 200:
-            setConvenios(response.data);
-            setFilteredConvenios(response.data);
-            break;
+      switch (response.status) {
+        case 200:
+          setConvenios(response.data);
+          setFilteredConvenios(response.data);
+          break;
 
-          default:
-            alert("Não foi possível carregar os dados dos convênios");
-        }
-      } catch (e) {
-        e.response?.data ? alert(e.response.data) : alert(e);
+        default:
+          alert("Não foi possível carregar os dados dos convênios");
       }
+    } catch (e) {
+      e.response?.data ? alert(e.response.data) : alert(e);
     }
 
     (popupSearchConvenio || popupView) && setConvenioId(0);
@@ -107,22 +105,20 @@ function Pacientes() {
   }, [convenioId]);
 
   useEffect(async () => {
-    if (popupSearchMedico) {
-      try {
-        const response = await medicosServices.findAll();
+    try {
+      const response = await medicosServices.findAll();
 
-        switch (response.status) {
-          case 200:
-            setMedicos(response.data);
-            setFilteredMedicos(response.data);
-            break;
+      switch (response.status) {
+        case 200:
+          setMedicos(response.data);
+          setFilteredMedicos(response.data);
+          break;
 
-          default:
-            alert("Não foi possível carregar os dados dos médicos");
-        }
-      } catch (e) {
-        e.response?.data ? alert(e.response.data) : alert(e);
+        default:
+          alert("Não foi possível carregar os dados dos médicos");
       }
+    } catch (e) {
+      e.response?.data ? alert(e.response.data) : alert(e);
     }
 
     (popupSearchMedico || popupView) && setMedicoId(0);
@@ -575,7 +571,7 @@ function Pacientes() {
             <th scope="col" />
             <th scope="col">Nome</th>
             <th scope="col">Plano</th>
-            <th scope="col">Acomodação</th>
+            <th scope="col">CRO | CRM</th>
           </tr>
         </thead>
         <tbody>
@@ -610,7 +606,7 @@ function Pacientes() {
           />
         </p>
       </div>
-      <table class="table table-dark">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th scope="col">ID</th>
@@ -625,11 +621,11 @@ function Pacientes() {
         </thead>
         <tbody>
           {pacientes.map((item) => (
-            <tr scope="row">
-              <td>{item.id}</td>
+            <tr>
+              <th scope="row">{item.id}</th>
               <td>{item.nome}</td>
               <td>{item.CPF}</td>
-              <td>{item.dataNasc}</td>
+              <td>{new Date(item.dataNasc).toDateString()}</td>
               <td>{item.email}</td>
               <td>{item.telefone}</td>
               <td>{item.celular}</td>
@@ -644,34 +640,32 @@ function Pacientes() {
           ))}
         </tbody>
       </table>
-      <div>
-        <Dialog open={openPopup} fullWidth={true} maxWidth={"md"}>
-          <DialogTitle>Cadastrar Novo Paciente</DialogTitle>
-          <DialogContent>
-            {saveSceneSucessfull && (
-              <DialogContentText>
-                <CheckOutlinedIcon /> Paciente cadastrado com sucesso!!!
-              </DialogContentText>
-            )}
-            {saveSceneFailure && (
-              <DialogContentText>
-                <WarningOutlinedIcon /> Falha ao tentar cadastrar paciente,
-                verifique os dados e tente novamente!!!
-              </DialogContentText>
-            )}
-            {form()}
-          </DialogContent>
-          <DialogActions>
-            {loadingSceneInfo && <CircularProgress color="secondary" />}
-            <Button onClick={() => closePopup()}>Cancelar</Button>
-            {saveSceneSucessfull ? (
-              <Button onClick={() => closePopup()}>Sair</Button>
-            ) : (
-              <Button onClick={() => handleSavePaciente()}>Salvar</Button>
-            )}
-          </DialogActions>
-        </Dialog>
-      </div>
+      <Dialog open={openPopup} fullWidth={true} maxWidth={"md"}>
+        <DialogTitle>Cadastrar Novo Paciente</DialogTitle>
+        <DialogContent>
+          {saveSceneSucessfull && (
+            <DialogContentText>
+              <CheckOutlinedIcon /> Paciente cadastrado com sucesso!!!
+            </DialogContentText>
+          )}
+          {saveSceneFailure && (
+            <DialogContentText>
+              <WarningOutlinedIcon /> Falha ao tentar cadastrar paciente,
+              verifique os dados e tente novamente!!!
+            </DialogContentText>
+          )}
+          {form()}
+        </DialogContent>
+        <DialogActions>
+          {loadingSceneInfo && <CircularProgress color="secondary" />}
+          <Button onClick={() => closePopup()}>Cancelar</Button>
+          {saveSceneSucessfull ? (
+            <Button onClick={() => closePopup()}>Sair</Button>
+          ) : (
+            <Button onClick={() => handleSavePaciente()}>Salvar</Button>
+          )}
+        </DialogActions>
+      </Dialog>
       <div>
         <Dialog open={popupDelete} fullWidth={true} maxWidth={"md"}>
           <DialogTitle>Deletar Paciente</DialogTitle>

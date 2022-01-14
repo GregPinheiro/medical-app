@@ -394,7 +394,7 @@ function Fornecedores() {
           />
         </p>
       </div>
-      <table class="table table-dark">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th scope="col">ID</th>
@@ -411,8 +411,8 @@ function Fornecedores() {
         </thead>
         <tbody>
           {fornecedores.map((item) => (
-            <tr scope="row">
-              <td>{item.id}</td>
+            <tr>
+              <th scope="row">{item.id}</th>
               <td>{item.nome}</td>
               <td>{item.CNPJ}</td>
               <td>{item.representante}</td>

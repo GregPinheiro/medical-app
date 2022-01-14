@@ -49,6 +49,7 @@ function Navbar() {
           Medical App
         </a>
         <div className="navbar-nav mr-auto">
+          <li className="nav-item">{menuItem("Consultas")}</li>
           <li className="nav-item">{menuItem("Pacientes")}</li>
           <li className="nav-item">{menuItem("Médicos")}</li>
           <li className="nav-item">{menuItem("Hospitais")}</li>
