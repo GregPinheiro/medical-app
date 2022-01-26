@@ -19,25 +19,26 @@ import {
   DialogContentText,
 } from "@material-ui/core";
 
-import PacienteTable from "../SearchPaciente";
-import MedicoTable from "../SearchMedico";
-import HospitalTable from "../SearchHospital";
-
-import consultasService from "../../services/consultas.service";
+import acompCirurgiasService from "../../services/acompCirurgias.service";
 import pacientesService from "../../services/pacientes.service";
-import medicosService from "../../services/medicos.service";
+import conveniosService from "../../services/convenios.service";
+import cirurgiasService from "../../services/cirurgias.service";
 import hospitaisService from "../../services/hospitais.service";
-import { toDateString } from "../../commom/dateHelper";
 
-function Consultas() {
+import SearchPaciente from "../SearchPaciente";
+import SearchConvenio from "../SearchConvenio";
+import SearchCirurgia from "../SearchCirurgia";
+import SearchHospital from "../SearchHospital";
+
+function AcompCirurgias() {
   const [updateTable, setUpdateTable] = useState(false);
   const [updateForm, setUpdateForm] = useState(false);
   const [readOnly, setReadOnly] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [consultas, setConsultas] = useState([]);
-  const [consultaDetail, setConsultaDetail] = useState({});
-  const [consultaId, setConsultaId] = useState(0);
-  const [consultaName, setConsultaName] = useState("");
+  const [datas, setDatas] = useState([]);
+  const [datasDetail, setDatasDetail] = useState({});
+  const [dataId, setDataId] = useState(0);
+  const [dataName, setDataName] = useState("");
   const [popupNew, setPopupNew] = useState(false);
   const [loadingNew, setLoadingNew] = useState(false);
   const [newSucessfull, setNewSucessfull] = useState(false);
@@ -57,17 +58,21 @@ function Consultas() {
   const [popupPaciente, setPopupPaciente] = useState(false);
   const [pacientes, setPacientes] = useState([]);
   const [pacienteDetail, setPacienteDetail] = useState({});
-  const [popupMedicos, setPopupMedicos] = useState(false);
-  const [medicos, setMedicos] = useState([]);
-  const [medicoDetail, setMedicoDetail] = useState({});
-  const [popupHospitais, setPopupHospitais] = useState(false);
+  const [popupConvenio, setPopupConvenio] = useState(false);
+  const [convenios, setConvenios] = useState([]);
+  const [convenioDetail, setConvenioDetail] = useState({});
+  const [popupCirurgia, setPopupCirurgia] = useState(false);
+  const [cirurgias, setCirurgias] = useState([]);
+  const [cirurgiaDetail, setCirurgiaDetail] = useState({});
+  const [popupHospital, setPopupHospital] = useState(false);
   const [hospitais, setHospitais] = useState([]);
   const [hospitalDetail, setHospitalDetail] = useState({});
 
   useEffect(() => {
-    apiRequestConsultas();
+    apiRequestAcompCirurgias();
     apiRequestPacientes();
-    apiRequestMedicos();
+    apiRequestConvenios();
+    apiRequestCirurgias();
     apiRequestHospitais();
     setUpdateTable(false);
   }, [updateTable]);
@@ -77,42 +82,69 @@ function Consultas() {
       loadDetail("pacienteName", pacienteDetail.nome);
       loadDetail("pacienteCPF", pacienteDetail.CPF);
       loadDetail("pacienteDataNasc", pacienteDetail.dataNasc);
-    }
 
-    if (medicoDetail) {
-      loadDetail("medicoName", medicoDetail.nome);
-      loadDetail("medicoEspecialidade", medicoDetail.especialidade);
-      loadDetail("medicoCROCRM", medicoDetail.CRO_CRM);
-    }
+      !convenioDetail.nome &&
+        pacienteDetail.convenio &&
+        setConvenioDetail(
+          convenios.find(({ id }) => id == pacienteDetail.convenio.id)
+        );
 
+      !hospitalDetail.nome &&
+        pacienteDetail.convenio &&
+        pacienteDetail.convenio.hospitais &&
+        pacienteDetail.convenio.hospitais.length > 0 &&
+        setHospitalDetail(
+          hospitais.find(
+            ({ id }) => id == pacienteDetail.convenio.hospitais[0].id
+          )
+        );
+    }
+    if (convenioDetail) {
+      loadDetail("convenioNome", convenioDetail.nome);
+      loadDetail("convenioPlano", convenioDetail.plano);
+      loadDetail("convenioAcomodacao", convenioDetail.acomodacao);
+    }
+    if (cirurgiaDetail) {
+      loadDetail("cirurgiaNome", cirurgiaDetail.nome);
+      loadDetail("cirurgiaCID", cirurgiaDetail.CID);
+      loadDetail("cirurgiaTUSS", cirurgiaDetail.TUSS);
+    }
     if (hospitalDetail) {
-      loadDetail("hospitalName", hospitalDetail.nome);
+      loadDetail("hospitalNome", hospitalDetail.nome);
       loadDetail("hospitalUnidade", hospitalDetail.unidade);
       loadDetail("hospitalCNPJ", hospitalDetail.CNPJ);
     }
 
     setUpdateForm(false);
-  }, [updateForm, pacienteDetail, medicoDetail, hospitalDetail]);
+  }, [
+    updateForm,
+    pacienteDetail,
+    convenioDetail,
+    cirurgiaDetail,
+    hospitalDetail,
+  ]);
 
   useEffect(() => {
-    if (consultaDetail) {
-      for (const detail in consultaDetail) {
-        loadDetail(detail, consultaDetail[detail]);
+    if (datasDetail) {
+      for (const detail in datasDetail) {
+        loadDetail(detail, datasDetail[detail]);
       }
-      setPacienteDetail(consultaDetail.paciente);
-      setMedicoDetail(consultaDetail.medico);
-      setHospitalDetail(consultaDetail.hospital);
+      setPacienteDetail(datasDetail.paciente);
+      setConvenioDetail(datasDetail.convenio);
+      setCirurgiaDetail(datasDetail.cirurgia);
+      setHospitalDetail(datasDetail.hospital);
     }
-  }, [consultaDetail]);
+  }, [datasDetail]);
 
-  const apiRequestConsultas = async () => {
+  const apiRequestAcompCirurgias = async () => {
     try {
       setLoading(true);
-      const response = await consultasService.findAll();
+
+      const response = await acompCirurgiasService.findAll();
 
       switch (response.status) {
         case 200:
-          setConsultas(response.data);
+          setDatas(response.data);
           break;
 
         default:
@@ -144,17 +176,34 @@ function Consultas() {
     }
   };
 
-  const apiRequestMedicos = async () => {
+  const apiRequestConvenios = async () => {
     try {
-      const response = await medicosService.findAll();
+      const response = await conveniosService.findAll();
 
       switch (response.status) {
         case 200:
-          setMedicos(response.data);
+          setConvenios(response.data);
           break;
 
         default:
-          alert("Falha ao buscar as informações dos médicos");
+          alert("Falha ao buscar as informações dos convênios");
+      }
+    } catch (e) {
+      e.response?.data ? alert(e.response.data) : alert(e);
+    }
+  };
+
+  const apiRequestCirurgias = async () => {
+    try {
+      const response = await cirurgiasService.findAll();
+
+      switch (response.status) {
+        case 200:
+          setCirurgias(response.data);
+          break;
+
+        default:
+          alert("Falha ao buscar as informações das cirurgias");
       }
     } catch (e) {
       e.response?.data ? alert(e.response.data) : alert(e);
@@ -184,25 +233,44 @@ function Consultas() {
     setUpdateForm(true);
   };
 
-  const selectMedico = (e) => {
-    setMedicoDetail(medicos.find(({ id }) => id == e.target.id));
-    setPopupMedicos(false);
+  const selectConvenio = (e) => {
+    setConvenioDetail(convenios.find(({ id }) => id == e.target.id));
+    setPopupConvenio(false);
+    setUpdateForm(true);
+  };
+
+  const selectCirurgia = (e) => {
+    setCirurgiaDetail(cirurgias.find(({ id }) => id == e.target.id));
+    setPopupCirurgia(false);
     setUpdateForm(true);
   };
 
   const selectHospital = (e) => {
     setHospitalDetail(hospitais.find(({ id }) => id == e.target.id));
-    setPopupHospitais(false);
-    setUpdateForm(true);
+    setPopupHospital(false);
+    setUpdateTable(true);
   };
 
-  const handleSaveConsulta = async () => {
+  const loadDetail = (element, newValue) => {
+    const item = document.getElementById(element);
+
+    if (item) {
+      if (item.type === "date" && newValue) {
+        const date = new Date(newValue);
+        item.value = date.toISOString().substr(0, 10);
+      } else {
+        item.value = newValue ? newValue : "";
+      }
+    }
+  };
+
+  const handleSaveCirurgia = async () => {
     const body = getBody();
 
     try {
       setLoadingNew(true);
 
-      const response = await consultasService.create(body);
+      const response = await acompCirurgiasService.create(body);
 
       switch (response.status) {
         case 201:
@@ -228,16 +296,16 @@ function Consultas() {
     try {
       setLoadingView(true);
 
-      const response = await consultasService.findOne(id);
+      const response = await acompCirurgiasService.findOne(id);
 
       switch (response.status) {
         case 200:
-          setConsultaDetail(response.data);
+          setDatasDetail(response.data);
           break;
 
         default:
           setViewFailure(true);
-          alert("Falha ao buscar as informações da consulta, tente novamente");
+          alert("Falha ao buscar as informações da cirurgia, tente novamente");
       }
     } catch (e) {
       setViewFailure(true);
@@ -249,22 +317,22 @@ function Consultas() {
 
   const handleEdit = async (id) => {
     setPopupEdit(true);
-    setConsultaId(id);
+    setDataId(id);
 
     try {
       setLoadingEdit(true);
 
-      const response = await consultasService.findOne(id);
+      const response = await acompCirurgiasService.findOne(id);
 
       switch (response.status) {
         case 200:
-          setConsultaDetail(response.data);
+          setDatasDetail(response.data);
           break;
 
         default:
           setEditFailure(true);
           alert(
-            "Falha ao buscar as informações da consulta, tente novamente mais tarde"
+            "Falha ao buscar as informações da cirurgia, tente novamente mais tarde"
           );
       }
     } catch (e) {
@@ -275,13 +343,13 @@ function Consultas() {
     }
   };
 
-  const editConsulta = async () => {
+  const editCirurgia = async () => {
     const body = getBody();
 
     try {
       setLoadingEdit(true);
 
-      const response = await consultasService.update(consultaId, body);
+      const response = await acompCirurgiasService.update(dataId, body);
 
       switch (response.status) {
         case 202:
@@ -301,16 +369,16 @@ function Consultas() {
   };
 
   const handleDelete = (id, name) => {
-    setConsultaId(id);
-    setConsultaName(name);
+    setDataId(id);
+    setDataName(name);
     setPopupDelete(true);
   };
 
-  const deleteConsulta = async () => {
+  const deleteCirurgia = async () => {
     try {
       setLoadingDelete(true);
 
-      const response = await consultasService.delete(consultaId);
+      const response = await acompCirurgiasService.delete(dataId);
 
       switch (response.status) {
         case 202:
@@ -332,14 +400,13 @@ function Consultas() {
   const getBody = () => {
     return {
       pacienteId: pacienteDetail.id,
-      medicoId: medicoDetail.id,
+      convenioId: convenioDetail.id,
+      cirurgiaId: cirurgiaDetail.id,
       hospitalId: hospitalDetail.id,
-      dataConsulta: getValue("dataConsulta"),
-      historicoDoenca: getValue("historicoDoenca"),
-      historicoSaude: getValue("historicoSaude"),
-      exameFisico: getValue("exameFisico"),
-      diagnostico: getValue("diagnostico"),
-      exames: getValue("exames"),
+      dataPrevista: getValue("dataPrevista"),
+      reserva: getValue("reserva"),
+      dataAprovacao: getValue("dataAprovacao"),
+      dataCirurgia: getValue("dataCirurgia"),
       status: getValue("status"),
     };
   };
@@ -347,19 +414,6 @@ function Consultas() {
   const getValue = (id) => {
     const { value } = document.getElementById(id);
     return value.length > 0 ? value : null;
-  };
-
-  const loadDetail = (element, newValue) => {
-    const item = document.getElementById(element);
-
-    if (item) {
-      if (item.type === "date" && newValue) {
-        const date = new Date(newValue);
-        item.value = date.toISOString().substr(0, 10);
-      } else {
-        item.value = newValue ? newValue : "";
-      }
-    }
   };
 
   const form = () => {
@@ -403,56 +457,94 @@ function Consultas() {
           </div>
         </div>
         <div class="form-group" style={{ margin: "30px 0 0" }}>
-          <label for="medicoName">Nome do Médico</label>
+          <label for="convenioNome">Convênio</label>
           <input
             type="text"
             class="form-control"
-            id="medicoName"
-            placeholder="Nome do médico"
+            id="convenioNome"
+            placeholder="Nome do convênio"
             readOnly={true}
           />
           {(popupNew || popupEdit) && (
             <SearchIcon
               style={{ cursor: "pointer" }}
-              onClick={() => setPopupMedicos(true)}
+              onClick={() => setPopupConvenio(true)}
             />
           )}
         </div>
         <div class="row">
           <div class="col">
-            <label for="medicoEspecialidade">Especialidade</label>
+            <label for="convenioPlano">Plano</label>
             <input
               type="text"
               class="form-control"
-              id="medicoEspecialidade"
-              placeholder="Especialidade"
+              id="convenioPlano"
+              placeholder="Plano"
               readOnly={true}
             />
           </div>
           <div class="col">
-            <label for="medicoCROCRM">CRO|CRM</label>
+            <label for="convenioAcomodacao">Acomodação</label>
             <input
               type="text"
               class="form-control"
-              id="medicoCROCRM"
-              placeholder="CRO|CRM"
+              id="convenioAcomodacao"
+              placeholder="Acomodação"
               readOnly={true}
             />
           </div>
         </div>
         <div class="form-group" style={{ margin: "30px 0 0" }}>
-          <label for="hospitalName">Nome do Hospital</label>
+          <label for="cirurgiaNome">Procedimento Cirurgico</label>
           <input
             type="text"
             class="form-control"
-            id="hospitalName"
+            id="cirurgiaNome"
+            placeholder="Nome do procedimento cirurgico"
+            readOnly={true}
+          />
+          {(popupNew || popupEdit) && (
+            <SearchIcon
+              style={{ cursor: "pointer" }}
+              onClick={() => setPopupCirurgia(true)}
+            />
+          )}
+        </div>
+        <div class="row">
+          <div class="col">
+            <label for="cirurgiaCID">CID</label>
+            <input
+              type="text"
+              class="form-control"
+              id="cirurgiaCID"
+              placeholder="CID"
+              readOnly={true}
+            />
+          </div>
+          <div class="col">
+            <label for="cirurgiaTUSS">TUSS</label>
+            <input
+              type="text"
+              class="form-control"
+              id="cirurgiaTUSS"
+              placeholder="TUSS"
+              readOnly={true}
+            />
+          </div>
+        </div>
+        <div class="form-group" style={{ margin: "30px 0 0" }}>
+          <label for="hospitalNome">Hospital</label>
+          <input
+            type="text"
+            class="form-control"
+            id="hospitalNome"
             placeholder="Nome do hospital"
             readOnly={true}
           />
           {(popupNew || popupEdit) && (
             <SearchIcon
               style={{ cursor: "pointer" }}
-              onClick={() => setPopupHospitais(true)}
+              onClick={() => setPopupHospital(true)}
             />
           )}
         </div>
@@ -480,69 +572,44 @@ function Consultas() {
         </div>
         <div class="row">
           <div class="col">
-            <label for="dataConsulta">Data da Consulta</label>
+            <label for="dataPrevista">Data Prevista</label>
             <input
               type="date"
               class="form-control"
-              id="dataConsulta"
+              id="dataPrevista"
+              readOnly={readOnly}
+            />
+          </div>
+          <div class="col">
+            <label for="reservas">Reserva</label>
+            <input
+              type="number"
+              class="form-control"
+              id="reserva"
+              placeholder="Reserva"
               readOnly={readOnly}
             />
           </div>
         </div>
-        <div class="form-group">
-          <label for="historicoDoenca">Histórico da Doença</label>
-          <textarea
-            class="form-control"
-            id="historicoDoenca"
-            placeholder="Histórico da Doença"
-            rows="3"
-            cols="50"
-            readOnly={readOnly}
-          />
-        </div>
-        <div class="form-group">
-          <label for="historicoSaude">Histórico de Saúde</label>
-          <textarea
-            class="form-control"
-            id="historicoSaude"
-            placeholder="Histórico de Saúde"
-            rows="3"
-            cols="50"
-            readOnly={readOnly}
-          />
-        </div>
-        <div class="form-group">
-          <label for="exameFisico">Exame Físico</label>
-          <textarea
-            class="form-control"
-            id="exameFisico"
-            placeholder="Exame Físico"
-            rows="3"
-            cols="50"
-            readOnly={readOnly}
-          />
-        </div>
-        <div class="form-group">
-          <label for="diagnostico">Diagnótico</label>
-          <textarea
-            class="form-control"
-            id="diagnostico"
-            placeholder="Diagnótico"
-            rows="3"
-            cols="50"
-            readOnly={readOnly}
-          />
-        </div>
-        <div class="form-group">
-          <label for="exames">Exames</label>
-          <textarea
-            class="form-control"
-            id="exames"
-            placeholder="Exames"
-            rows="3"
-            cols="50"
-            readOnly={readOnly}
-          />
+        <div class="row">
+          <div class="col">
+            <label for="dataAprovacao">Data Aprovação</label>
+            <input
+              type="date"
+              class="form-control"
+              id="dataAprovacao"
+              readOnly={readOnly}
+            />
+          </div>
+          <div class="col">
+            <label for="dataCirurgia">Data Cirurgia</label>
+            <input
+              type="date"
+              class="form-control"
+              id="dataCirurgia"
+              readOnly={readOnly}
+            />
+          </div>
         </div>
         <div class="form-group">
           <label for="status">Status</label>
@@ -550,7 +617,7 @@ function Consultas() {
             class="form-control"
             id="status"
             placeholder="Status"
-            rows="4"
+            rows="6"
             cols="50"
             readOnly={readOnly}
           />
@@ -582,17 +649,18 @@ function Consultas() {
     setDeleteFailure(false);
 
     setPacienteDetail({});
-    setMedicoDetail({});
+    setConvenioDetail({});
+    setCirurgiaDetail({});
     setHospitalDetail({});
   };
 
   return (
     <>
       <div className="Medicos-Title">
-        <h1>Consultas</h1>
+        <h1>Acomp. Cirurgias</h1>
         {loading && <CircularProgress color="secondary" />}
         <p>
-          Nova Consulta{" "}
+          Novo Acomp. Cirurgia{" "}
           <PostAddIcon
             className="Add-Button"
             onClick={() => setPopupNew(true)}
@@ -604,20 +672,22 @@ function Consultas() {
           <tr>
             <th scope="col">ID</th>
             <th scope="col">Paciente</th>
-            <th scope="col">Médico</th>
+            <th scope="col">Convênio</th>
+            <th scope="col">Plano</th>
+            <th scope="col">Cirurgia</th>
             <th scope="col">Hospital</th>
-            <th scope="col">Data Consulta</th>
-            <th scope="col">Função</th>
+            <th scope="col">Funções</th>
           </tr>
         </thead>
         <tbody>
-          {consultas.map((item) => (
+          {datas.map((item) => (
             <tr>
               <th scope="row">{item.id}</th>
               <td>{item.paciente?.nome}</td>
-              <td>{item.medico?.nome}</td>
+              <td>{item.convenio?.nome}</td>
+              <td>{item.convenio?.plano}</td>
+              <td>{item.cirurgia?.nome}</td>
               <td>{item.hospital?.nome}</td>
-              <td>{toDateString(item.dataConsulta)}</td>
               <td className="td-funcoes">
                 <PageviewIcon
                   titleAccess="Visualizar"
@@ -637,16 +707,16 @@ function Consultas() {
         </tbody>
       </table>
       <Dialog open={popupNew} fullWidth={true} maxWidth={"md"}>
-        <DialogTitle>Cadastrar Nova Consulta</DialogTitle>
+        <DialogTitle>Cadastrar Nova Cirurgia</DialogTitle>
         <DialogContent>
           {newSucessfull && (
             <DialogContentText>
-              <CheckOutlinedIcon /> Consulta cadastrada com sucesso!!!
+              <CheckOutlinedIcon /> Cirurgia cadastrada com sucesso!!!
             </DialogContentText>
           )}
           {newFailure && (
             <DialogContentText>
-              <WarningOutlinedIcon /> Falha ao tentar cadastrar consulta,
+              <WarningOutlinedIcon /> Falha ao tentar cadastrar cirurgia,
               verifique os dados e tente novamente!!!
             </DialogContentText>
           )}
@@ -658,31 +728,36 @@ function Consultas() {
           {newSucessfull ? (
             <Button onClick={() => closePopup()}>Sair</Button>
           ) : (
-            <Button onClick={() => handleSaveConsulta()}>Salvar</Button>
+            <Button onClick={() => handleSaveCirurgia()}>Salvar</Button>
           )}
         </DialogActions>
       </Dialog>
-      <PacienteTable
+      <SearchPaciente
         open={popupPaciente}
         pacientes={pacientes}
         selectPaciente={selectPaciente}
       />
-      <MedicoTable
-        open={popupMedicos}
-        medicos={medicos}
-        selectMedico={selectMedico}
+      <SearchConvenio
+        open={popupConvenio}
+        convenios={convenios}
+        selectConvenio={selectConvenio}
       />
-      <HospitalTable
-        open={popupHospitais}
+      <SearchCirurgia
+        open={popupCirurgia}
+        cirurgias={cirurgias}
+        selectCirurgia={selectCirurgia}
+      />
+      <SearchHospital
+        open={popupHospital}
         hospitais={hospitais}
         selectHospital={selectHospital}
       />
       <Dialog open={popupView} fullWidth={true} maxWidth={"md"}>
-        <DialogTitle>Dados da Consulta</DialogTitle>
+        <DialogTitle>Dados da Cirurgia</DialogTitle>
         <DialogContent>
           {viewFailure && (
             <DialogContentText>
-              <WarningOutlinedIcon /> Falha ao carregar os dados da consulta
+              <WarningOutlinedIcon /> Falha ao carregar os dados da cirurgia
             </DialogContentText>
           )}
           {form()}
@@ -693,16 +768,16 @@ function Consultas() {
         </DialogActions>
       </Dialog>
       <Dialog open={popupEdit} fullWidth={true} maxWidth={"md"}>
-        <DialogTitle>Editar Dados da Consulta</DialogTitle>
+        <DialogTitle>Editar Dados da Cirurgia</DialogTitle>
         <DialogContent>
           {editSucessfull && (
             <DialogContentText>
-              <CheckOutlinedIcon /> Consulta editado com sucesso!!!
+              <CheckOutlinedIcon /> Cirurgia editado com sucesso!!!
             </DialogContentText>
           )}
           {editFailure && (
             <DialogContentText>
-              <WarningOutlinedIcon /> Falha ao tentar editar consulta, verifique
+              <WarningOutlinedIcon /> Falha ao tentar editar cirurgia, verifique
               os dados e tente novamente!!!
             </DialogContentText>
           )}
@@ -714,26 +789,25 @@ function Consultas() {
           {editSucessfull ? (
             <Button onClick={() => closePopup()}>Sair</Button>
           ) : (
-            <Button onClick={() => editConsulta()}>Salvar</Button>
+            <Button onClick={() => editCirurgia()}>Salvar</Button>
           )}
         </DialogActions>
       </Dialog>
       <Dialog open={popupDelete} fullWidth={true} maxWidth={"md"}>
-        <DialogTitle>Deletar Consulta</DialogTitle>
+        <DialogTitle>Deletar Cirurgia</DialogTitle>
         <DialogContent>
           {deleteSucessfull && (
             <DialogContentText>
-              <CheckOutlinedIcon /> Consulta deletada com sucesso!!!
+              <CheckOutlinedIcon /> Cirurgia deletada com sucesso!!!
             </DialogContentText>
           )}
           {deleteFailure && (
             <DialogContentText>
-              <WarningOutlinedIcon /> Falha ao tentar deletar consulta,
+              <WarningOutlinedIcon /> Falha ao tentar deletar cirurgia,
               verifique os dados e tente novamente!!!
             </DialogContentText>
           )}
-          Você realmente deseja deletar a consulta do(a) {consultaName} (
-          {consultaId}
+          Você realmente deseja deletar a cirurgia do(a) {dataName} ({dataId}
           )?
         </DialogContent>
         <DialogActions>
@@ -742,7 +816,7 @@ function Consultas() {
             <Button onClick={() => closePopup()}>Sair</Button>
           )}
           {!deleteSucessfull && (
-            <Button onClick={() => deleteConsulta()}>Sim</Button>
+            <Button onClick={() => deleteCirurgia()}>Sim</Button>
           )}
           {!deleteSucessfull && (
             <Button onClick={() => closePopup()}>Não</Button>
@@ -753,4 +827,4 @@ function Consultas() {
   );
 }
 
-export default Consultas;
+export default AcompCirurgias;
