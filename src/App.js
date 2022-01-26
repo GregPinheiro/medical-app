@@ -11,6 +11,7 @@ import Hospitais from "./Components/Hospitais";
 import Cirurgias from "./Components/Cirurgias";
 import Fornecedores from "./Components/Fornecedores";
 import Consultas from "./Components/Consulta";
+import AcompCirurgias from "./Components/AcompCirurgias";
 
 function App() {
   return (
@@ -23,6 +24,10 @@ function App() {
 
       <Route path="/consultas">
         <Consultas />
+      </Route>
+
+      <Route path="/acomp-cirurgias">
+        <AcompCirurgias />
       </Route>
 
       <Route path="/pacientes">
