@@ -12,6 +12,7 @@ import Cirurgias from "./Components/Cirurgias";
 import Fornecedores from "./Components/Fornecedores";
 import Consultas from "./Components/Consulta";
 import AcompCirurgias from "./Components/AcompCirurgias";
+import Reembolsos from "./Components/Reembolsos";
 
 function App() {
   return (
@@ -28,6 +29,10 @@ function App() {
 
       <Route path="/acomp-cirurgias">
         <AcompCirurgias />
+      </Route>
+
+      <Route path="/reembolsos">
+        <Reembolsos />
       </Route>
 
       <Route path="/pacientes">
